@@ -340,6 +340,8 @@ function WheelNode({
         height: nodeBox,
         marginLeft: -nodeBox / 2,
         marginTop: -nodeBox / 2,
+        pointerEvents: "none",
+        cursor: "inherit"
       }}
     >
       <CelestialBody
