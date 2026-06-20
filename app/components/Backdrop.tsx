@@ -1,61 +1,85 @@
 "use client";
 
-import { motion, useTransform, type MotionValue } from "motion/react";
+import {
+  motion,
+  useMotionTemplate,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
+import type { Category } from "@/app/data/portfolio";
 
 type BackdropProps = {
-  /** Shared wheel rotation in degrees. */
   rotation: MotionValue<number>;
-  /** Active category accent (hex). */
-  accent: string;
+  categories: Category[];
+  activeIndex: number;
   reduced: boolean;
 };
 
 /**
- * A single GPU-composited background layer. We never swap images — one large
- * gradient disc parallax-rotates with the wheel, and the accent glow
- * cross-fades via CSS transition. Everything here animates `transform`,
- * `opacity`, and `filter` only, so the compositor does the work off the main
- * thread.
+ * The sky. A single full-screen gradient whose three stops interpolate
+ * continuously between each category's (now near-black) time-of-day palette as
+ * the wheel turns. A rotating star field turns gently with the wheel, fixed
+ * stars sit behind it for parallax, and rolling hills ground the base. All
+ * colour/transform work runs on motion values, off the React render path.
  */
-export default function Backdrop({ rotation, accent, reduced }: BackdropProps) {
-  // Parallax: the backdrop turns at a fraction of the wheel's angle.
-  const discRotate = useTransform(rotation, (r) => r * 0.18);
-  const discRotateStr = useTransform(discRotate, (d) => `${d}deg`);
+export default function Backdrop({
+  rotation,
+  categories,
+  activeIndex,
+  reduced,
+}: BackdropProps) {
+  const n = categories.length;
+  const step = 360 / n;
+
+  const phase = useTransform(rotation, (r) => {
+    const p = (-r / step) % n;
+    return p < 0 ? p + n : p;
+  });
+
+  const range = Array.from({ length: n + 1 }, (_, i) => i);
+  const tops = [...categories.map((c) => c.sky[0]), categories[0].sky[0]];
+  const mids = [...categories.map((c) => c.sky[1]), categories[0].sky[1]];
+  const hors = [...categories.map((c) => c.sky[2]), categories[0].sky[2]];
+
+  const top = useTransform(phase, range, tops);
+  const mid = useTransform(phase, range, mids);
+  const hor = useTransform(phase, range, hors);
+  const gradient = useMotionTemplate`linear-gradient(180deg, ${top} 0%, ${mid} 46%, ${hor} 100%)`;
+
+  const active = categories[activeIndex];
+  const staticGradient = `linear-gradient(180deg, ${active.sky[0]} 0%, ${active.sky[1]} 46%, ${active.sky[2]} 100%)`;
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#06060a]"
-    >
-      {/* Accent wash — cross-fades color on category change. */}
-      <div
-        className="absolute inset-0 transition-[background] duration-700 ease-out"
-        style={{
-          background: `radial-gradient(120% 90% at 70% 30%, ${accent}33 0%, transparent 55%)`,
-        }}
-      />
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#05060c]">
+      {reduced ? (
+        <div
+          className="absolute inset-0 transition-[background] duration-700 ease-out"
+          style={{ background: staticGradient }}
+        />
+      ) : (
+        <motion.div className="absolute inset-0" style={{ background: gradient }} />
+      )}
 
-      {/* The big parallax disc. Conic gradient gives the spinning-wheel read. */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 h-[160vmax] w-[160vmax] rounded-full opacity-[0.35] blur-2xl will-change-transform"
-        style={{
-          x: "-50%",
-          y: "-50%",
-          rotate: reduced ? 0 : discRotateStr,
-          background: `conic-gradient(from 0deg, ${accent}00, ${accent}55, ${accent}00, ${accent}44, ${accent}00)`,
-          transition: "background 700ms ease-out",
-        }}
-      />
-
-      {/* Vignette + subtle grain for depth so the flat areas don't band. */}
-      <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_50%_50%,transparent_40%,#000_100%)]" />
-      <div
-        className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
-      />
+      {/* Rolling hills. Tinted silhouettes, layered for depth. */}
+      <svg
+        className="absolute bottom-0 left-0 h-[40vh] w-full"
+        viewBox="0 0 100 46"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 20 Q12 11 25 17 Q38 23 50 16 Q62 9 75 17 Q88 24 100 15 L100 46 L0 46 Z"
+          fill="rgba(46,34,78,0.55)"
+        />
+        <path
+          d="M0 28 Q15 20 30 26 Q45 32 60 25 Q75 18 88 26 Q95 30 100 26 L100 46 L0 46 Z"
+          fill="rgba(20,16,40,0.78)"
+        />
+        <path
+          d="M0 36 Q20 29 40 35 Q60 41 80 34 Q92 30 100 35 L100 46 L0 46 Z"
+          fill="rgba(6,5,14,0.96)"
+        />
+      </svg>
     </div>
   );
 }
+

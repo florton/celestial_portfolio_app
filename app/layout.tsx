@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cinzel, EB_Garamond } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Cinzel({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = EB_Garamond({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
   title: "Flanders Lorton — Senior Fullstack Developer",
   description:
-    "Portfolio of Flanders Lorton: production React, performance, and motion work.",
+    "Portfolio of Flanders Lorton: production React, performance, and motion — charted as a celestial atlas.",
 };
 
 export default function RootLayout({
@@ -25,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${display.variable} ${body.variable} antialiased`}>
         {children}
       </body>
     </html>

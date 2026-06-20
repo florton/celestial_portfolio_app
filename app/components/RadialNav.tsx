@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   animate,
   motion,
@@ -8,10 +8,77 @@ import {
   type MotionValue,
 } from "motion/react";
 import type { Category } from "@/app/data/portfolio";
+import CelestialBody from "./CelestialBody";
 
-const SIZE = 440; // logical wheel diameter in px (CSS-scaled for small screens)
-const RADIUS = SIZE * 0.42; // orbit radius for node centers
-const NODE = 96; // node box size
+const NODE = 230; // base node box size in px (scaled by viewport)
+
+type Geo = {
+  cx: number;
+  cy: number;
+  radius: number;
+  focalDeg: number;
+  vw: number;
+  vh: number;
+  /** Viewport scale so the wheel shrinks on small windows. */
+  vs: number;
+};
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** Wheel center off-canvas bottom-right; focal body lands in the upper-left. */
+function computeGeo(vw: number, vh: number): Geo {
+  const cx = vw * 0.92;
+  const cy = vh * 1.02;
+  const tx = vw * 0.27;
+  const ty = vh * 0.44;
+  const dx = tx - cx;
+  const dy = ty - cy;
+  return {
+    cx,
+    cy,
+    radius: Math.hypot(dx, dy),
+    focalDeg: (Math.atan2(dy, dx) * 180) / Math.PI,
+    vw,
+    vh,
+    vs: clamp(Math.min(vw, vh) / 860, 0.5, 1.1),
+  };
+}
+
+/**
+ * A full ring of stars around the wheel center, dense enough that the on-screen
+ * portion always looks full. Rotates with the wheel; whether they're *visible*
+ * is handled by a day/night opacity so they only show on the night side.
+ */
+/** Deterministic hash-noise in [0,1) for natural (non-gridded) scatter. */
+function rand(n: number) {
+  const x = Math.sin(n * 127.1 + 0.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * A uniform-density disc of stars around the wheel center. A disc is
+ * rotation-invariant, so spinning it never opens gaps at any angle — and with
+ * overflow visible the off-canvas portion still paints. Random radius/angle
+ * give a natural, clump-free night sky.
+ */
+function makeStars(geo: Geo) {
+  const R2 = Math.hypot(geo.cx, geo.cy) * 1.02; // reaches the far corner
+  return Array.from({ length: 600 }, (_, i) => {
+    const ang = rand(i + 1) * Math.PI * 2;
+    const r = Math.sqrt(rand(i + 137)) * R2;
+    const s = rand(i + 251);
+    return {
+      x: geo.cx + Math.cos(ang) * r,
+      y: geo.cy + Math.sin(ang) * r,
+      rad: s > 0.92 ? 2.6 : s > 0.7 ? 1.8 : 1.2,
+      o: 0.32 + rand(i + 379) * 0.42,
+    };
+  });
+}
+
+function mod(n: number, m: number) {
+  return ((n % m) + m) % m;
+}
 
 type RadialNavProps = {
   categories: Category[];
@@ -20,17 +87,14 @@ type RadialNavProps = {
   onActiveChange: (index: number) => void;
 };
 
-function mod(n: number, m: number) {
-  return ((n % m) + m) % m;
-}
-
 export default function RadialNav({
   categories,
   rotation,
   activeIndex,
   onActiveChange,
 }: RadialNavProps) {
-  const wheelRef = useRef<HTMLDivElement>(null);
+  const [geo, setGeo] = useState<Geo>(() => computeGeo(1280, 800));
+  const [mounted, setMounted] = useState(false);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
   const draggingRef = useRef(false);
   const lastAngleRef = useRef(0);
@@ -40,7 +104,14 @@ export default function RadialNav({
   const count = categories.length;
   const step = 360 / count;
 
-  // Keep the active category in sync with wherever the wheel currently sits.
+  useEffect(() => {
+    setMounted(true);
+    const update = () => setGeo(computeGeo(window.innerWidth, window.innerHeight));
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const syncActive = () => {
     const idx = mod(Math.round(-rotation.get() / step), count);
     if (idx !== lastActiveRef.current) {
@@ -49,12 +120,21 @@ export default function RadialNav({
     }
   };
 
-  // Fire active changes while spring/scroll animations are running too.
   useEffect(() => {
     const unsub = rotation.on("change", syncActive);
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rotation, step, count]);
+
+  const stars = useMemo(() => makeStars(geo), [geo]);
+
+  // Day/night: stars fade to nothing at the sun (day) and up at the moon
+  // (night, half a turn away), smoothly through every category between.
+  const starOpacity = useTransform(rotation, (r) => {
+    const p = mod(-r / step, count);
+    const nightness = (1 - Math.cos((p / count) * 2 * Math.PI)) / 2;
+    return 0.03 + 0.62 * nightness;
+  });
 
   const stopAnim = () => {
     animRef.current?.stop();
@@ -63,38 +143,34 @@ export default function RadialNav({
 
   const snapTo = (index: number) => {
     stopAnim();
-    animRef.current = animate(rotation, -index * step, {
+    // Target the rotationally-equivalent angle nearest the current rotation, so
+    // clicking a body never unwinds the full turns scrolling has accumulated.
+    const base = -index * step;
+    const current = rotation.get();
+    const target = base + 360 * Math.round((current - base) / 360);
+    animRef.current = animate(rotation, target, {
       type: "spring",
-      stiffness: 120,
-      damping: 18,
+      stiffness: 110,
+      damping: 20,
       restDelta: 0.01,
     });
   };
 
-  /** Snap to whichever node is closest to the focal point right now. */
   const snapToNearest = () => {
     const idx = Math.round(-rotation.get() / step);
     stopAnim();
     animRef.current = animate(rotation, -idx * step, {
       type: "spring",
-      stiffness: 130,
-      damping: 18,
+      stiffness: 120,
+      damping: 20,
       restDelta: 0.01,
     });
   };
 
-  /** Step relative to the node nearest the focal point (used by keys). */
-  const step1 = (dir: 1 | -1) => {
-    const current = Math.round(-rotation.get() / step);
-    snapTo(current + dir);
-  };
+  const step1 = (dir: 1 | -1) => snapTo(Math.round(-rotation.get() / step) + dir);
 
-  const pointerAngle = (clientX: number, clientY: number) => {
-    const rect = wheelRef.current!.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    return (Math.atan2(clientY - cy, clientX - cx) * 180) / Math.PI;
-  };
+  const pointerAngle = (clientX: number, clientY: number) =>
+    (Math.atan2(clientY - geo.cy, clientX - geo.cx) * 180) / Math.PI;
 
   const onPointerDown = (e: React.PointerEvent) => {
     draggingRef.current = true;
@@ -122,7 +198,7 @@ export default function RadialNav({
 
   const onWheelScroll = (e: React.WheelEvent) => {
     stopAnim();
-    rotation.set(rotation.get() + e.deltaY * 0.12);
+    rotation.set(rotation.get() + e.deltaY * 0.1);
     if (scrollIdleRef.current) clearTimeout(scrollIdleRef.current);
     scrollIdleRef.current = setTimeout(snapToNearest, 130);
   };
@@ -140,13 +216,66 @@ export default function RadialNav({
     }
   };
 
+  // Client-only: motion serializes numeric transforms differently than SSR,
+  // so rendering the wheel on the server causes a hydration mismatch. It's
+  // purely interactive, so we render it after mount.
+  if (!mounted) return null;
+
   return (
-    <div className="relative grid place-items-center scale-[0.66] sm:scale-90 lg:scale-100">
+    <>
+      {/* Node + orbit layer: covers the viewport, transparent to pointer events
+          except the bodies themselves. */}
       <div
-        ref={wheelRef}
+        className="pointer-events-none fixed inset-0 z-20"
         role="listbox"
         aria-label="Portfolio categories"
         aria-activedescendant={`wheel-node-${categories[activeIndex].id}`}
+      >
+        {/* Star field — rotates 1:1 with the wheel around the same center, so
+            the sky turns together with the bodies. */}
+        <motion.svg
+          className="absolute inset-0 h-full w-full will-change-transform"
+          style={{
+            rotate: rotation,
+            opacity: starOpacity,
+            overflow: "visible",
+            transformOrigin: `${geo.cx}px ${geo.cy}px`,
+          }}
+        >
+          {stars.map((s, i) => (
+            <circle key={i} cx={s.x} cy={s.y} r={s.rad} fill="#fdf6e3" opacity={s.o} />
+          ))}
+        </motion.svg>
+
+        <svg className="absolute inset-0 h-full w-full">
+          <circle
+            cx={geo.cx}
+            cy={geo.cy}
+            r={geo.radius}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="1.5"
+            opacity="0.07"
+          />
+        </svg>
+        {categories.map((cat, i) => (
+          <WheelNode
+            key={cat.id}
+            category={cat}
+            index={i}
+            step={step}
+            geo={geo}
+            rotation={rotation}
+            isActive={i === activeIndex}
+            onSelect={() => snapTo(i)}
+          />
+        ))}
+      </div>
+
+      {/* Sky drag surface: full viewport, below the bodies (z-10) and content
+          (z-20) so you can spin from anywhere empty, while clicks on bodies and
+          project cards still land. */}
+      <div
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -154,126 +283,81 @@ export default function RadialNav({
         onPointerCancel={endDrag}
         onWheel={onWheelScroll}
         onKeyDown={onKeyDown}
-        style={{ width: SIZE, height: SIZE, touchAction: "none" }}
-        className="relative cursor-grab touch-none rounded-full outline-none ring-offset-2 ring-offset-[#06060a] focus-visible:ring-2 focus-visible:ring-white/40 active:cursor-grabbing"
-      >
-        {/* Rotating rim — purely decorative mechanical feel. */}
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 rounded-full border border-white/10 will-change-transform"
-          style={{ rotate: rotation }}
-        >
-          {Array.from({ length: count }).map((_, i) => (
-            <span
-              key={i}
-              className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/15"
-              style={{
-                transform: `rotate(${i * step}deg) translateY(-${RADIUS}px)`,
-              }}
-            />
-          ))}
-        </motion.div>
-
-        {/* Focal pointer at 12 o'clock. */}
-        <div
-          aria-hidden
-          className="absolute left-1/2 top-1 h-0 w-0 -translate-x-1/2 border-x-8 border-t-[14px] border-x-transparent border-t-white/70"
-        />
-
-        {/* Orbiting nodes — always upright, no counter-rotation. */}
-        {categories.map((cat, i) => (
-          <WheelNode
-            key={cat.id}
-            category={cat}
-            index={i}
-            count={count}
-            rotation={rotation}
-            isActive={i === activeIndex}
-            onSelect={() => snapTo(i)}
-          />
-        ))}
-
-        {/* Center hub. */}
-        <Hub category={categories[activeIndex]} />
-      </div>
-    </div>
+        style={{ touchAction: "none" }}
+        className="fixed inset-0 z-10 cursor-grab outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:cursor-grabbing"
+        aria-hidden
+      />
+    </>
   );
 }
 
 function WheelNode({
   category,
   index,
-  count,
+  step,
+  geo,
   rotation,
   isActive,
   onSelect,
 }: {
   category: Category;
   index: number;
-  count: number;
+  step: number;
+  geo: Geo;
   rotation: MotionValue<number>;
   isActive: boolean;
   onSelect: () => void;
 }) {
-  const step = 360 / count;
-  const base = -90 + index * step; // focal point sits at top (-90°)
+  const { cx, cy, radius, focalDeg, vs } = geo;
+  const focalRad = (focalDeg * Math.PI) / 180;
+  const base = focalDeg + index * step;
+  const nodeBox = NODE * vs;
 
-  const rad = useTransform(rotation, (r) => ((base + r) * Math.PI) / 180);
-  const x = useTransform(rad, (a) => Math.cos(a) * RADIUS);
-  const y = useTransform(rad, (a) => Math.sin(a) * RADIUS);
-  // Depth cues from vertical position: top (focal) reads larger & brighter.
-  const scale = useTransform(y, [-RADIUS, RADIUS], [1.12, 0.82]);
-  const opacity = useTransform(y, [-RADIUS, 0, RADIUS], [1, 0.7, 0.4]);
-  const zIndex = useTransform(y, (v) => Math.round(100 - v));
+  const angle = useTransform(rotation, (r) => ((base + r) * Math.PI) / 180);
+  const x = useTransform(angle, (a) => cx + Math.cos(a) * radius);
+  const y = useTransform(angle, (a) => cy + Math.sin(a) * radius);
+  // Prominence from angular proximity to the focal direction.
+  const prox = useTransform(angle, (a) => Math.cos(a - focalRad));
+  const scale = useTransform(prox, [-1, 0.3, 1], [0.5, 0.82, 1.2]);
+  const opacity = useTransform(prox, [-0.1, 0.45, 1], [0, 0.65, 1]);
+  const zIndex = useTransform(prox, (p) => Math.round(p * 100) + 200);
 
   return (
     <motion.button
       id={`wheel-node-${category.id}`}
       role="option"
       aria-selected={isActive}
+      aria-label={category.label}
       onClick={onSelect}
-      className="absolute left-1/2 top-1/2 grid place-items-center rounded-2xl border text-center backdrop-blur-sm transition-colors will-change-transform"
+      className="pointer-events-auto absolute left-0 top-0 flex flex-col items-center justify-center gap-2"
       style={{
         x,
         y,
         scale,
         opacity,
         zIndex,
-        width: NODE,
-        height: NODE,
-        marginLeft: -NODE / 2,
-        marginTop: -NODE / 2,
-        borderColor: isActive ? category.accent : "rgba(255,255,255,0.12)",
-        background: isActive
-          ? `${category.accent}22`
-          : "rgba(255,255,255,0.04)",
-        boxShadow: isActive ? `0 0 28px ${category.accent}66` : "none",
+        width: nodeBox,
+        height: nodeBox,
+        marginLeft: -nodeBox / 2,
+        marginTop: -nodeBox / 2,
       }}
     >
-      <span className="px-2 text-[13px] font-medium leading-tight text-white/90">
+      <CelestialBody
+        kind={category.body}
+        accent={category.accent}
+        size={(isActive ? 178 : 146) * category.scale * vs}
+        active={isActive}
+      />
+      <span
+        className="px-1 text-center uppercase tracking-[0.16em] text-[#fdf6e3]"
+        style={{
+          fontSize: 13 * vs,
+          textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+          opacity: isActive ? 1 : 0.7,
+        }}
+      >
         {category.label}
       </span>
     </motion.button>
-  );
-}
-
-function Hub({ category }: { category: Category }) {
-  return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 grid h-36 w-36 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/10 bg-black/40 text-center backdrop-blur">
-      <div
-        className="absolute inset-0 rounded-full opacity-40 transition-[background] duration-700"
-        style={{
-          background: `radial-gradient(circle at 50% 50%, ${category.accent}55, transparent 70%)`,
-        }}
-      />
-      <div className="relative px-3">
-        <div className="text-base font-semibold text-white">
-          {category.label}
-        </div>
-        <div className="mt-1 text-[11px] leading-tight text-white/60">
-          {category.tagline}
-        </div>
-      </div>
-    </div>
   );
 }
