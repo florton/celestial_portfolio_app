@@ -16,6 +16,7 @@ export default function PortfolioExperience() {
   const rotation = useMotionValue(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const reduced = useReducedMotion() ?? false;
+  // const reduced = true
   const active = categories[activeIndex];
 
   return (
@@ -37,7 +38,7 @@ export default function PortfolioExperience() {
         <p className="mt-3 font-[var(--font-body)] text-base italic text-[#fdf6e3]/55">
           {reduced
             ? "Choose a constellation"
-            : "Turn the dial — drag the sky, scroll, or use the arrow keys"}
+            : "Drag the sky, scroll, or use the arrow keys"}
         </p>
       </header>
 
@@ -68,7 +69,7 @@ export default function PortfolioExperience() {
               transition={{ duration: 0.4 }}
             >
               <div
-                className="font-[var(--font-display)] text-4xl uppercase leading-tight tracking-[0.14em] sm:text-6xl"
+                className="font-[var(--font-display)] text-2xl uppercase leading-tight tracking-[0.14em] sm:text-3xl"
                 style={{ color: active.accent, textShadow: "0 2px 18px rgba(0,0,0,0.55)" }}
               >
                 {active.label}

@@ -38,7 +38,7 @@ export type Category = {
 export const categories: Category[] = [
   {
     id: "design",
-    label: "Design Systems",
+    label: "Design",
     tagline: "Tokens, primitives & a11y",
     accent: "#f0a72e",
     body: "sun",
