@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -9,7 +9,7 @@ import {
 } from "motion/react";
 import { categories } from "@/app/data/portfolio";
 import Backdrop from "./Backdrop";
-import RadialNav from "./RadialNav";
+import RadialNav, { ArrowButton } from "./RadialNav";
 import CategoryCard from "./CategoryCard";
 
 export default function PortfolioExperience() {
@@ -18,6 +18,8 @@ export default function PortfolioExperience() {
   const reduced = useReducedMotion() ?? false;
   // const reduced = true
   const active = categories[activeIndex];
+  const stepRef = useRef<((dir: 1 | -1) => void) | null>(null);
+  const step = (dir: 1 | -1) => stepRef.current?.(dir);
 
   return (
     <main className="relative flex min-h-screen flex-col">
@@ -44,25 +46,34 @@ export default function PortfolioExperience() {
         </p>
         <p className="mt-2 font-[var(--font-body)] text-sm italic text-[#fdf6e3]/40">
           {reduced
-            ? "Choose a constellation"
-            : "Drag the sky, scroll, or use the arrow keys"}
+            ? "Use the arrows, or drag the sky"
+            : "Drag the sky, scroll, or use the arrows"}
         </p>
+
+        {/* Click controls, directly below the hint text. */}
+        <div className="pointer-events-auto mt-4 flex items-center justify-center gap-3">
+          <ArrowButton
+            label="Previous constellation"
+            direction="left"
+            onClick={() => step(-1)}
+          />
+          <ArrowButton
+            label="Next constellation"
+            direction="right"
+            onClick={() => step(1)}
+          />
+        </div>
       </header>
 
       {/* Sky stage: positioned parent for the wheel's drag surface + label. */}
       <section className="relative flex-1">
-        {reduced ? (
-          <div className="flex h-full items-center justify-center">
-            <ReducedNav activeIndex={activeIndex} onSelect={setActiveIndex} />
-          </div>
-        ) : (
-          <RadialNav
-            categories={categories}
-            rotation={rotation}
-            activeIndex={activeIndex}
-            onActiveChange={setActiveIndex}
-          />
-        )}
+        <RadialNav
+          categories={categories}
+          rotation={rotation}
+          activeIndex={activeIndex}
+          onActiveChange={setActiveIndex}
+          controlsRef={stepRef}
+        />
 
         {/* Fixed "current plate" label in the lower-left, over the hills and
             clear of both the bodies (upper-left) and the card (lower-right). */}
@@ -92,34 +103,5 @@ export default function PortfolioExperience() {
         <CategoryCard category={active} reduced={reduced} />
       </section>
     </main>
-  );
-}
-
-/** Reduced-motion / no-JS-friendly fallback. */
-function ReducedNav({
-  activeIndex,
-  onSelect,
-}: {
-  activeIndex: number;
-  onSelect: (i: number) => void;
-}) {
-  return (
-    <nav className="flex flex-wrap justify-center gap-2 px-6">
-      {categories.map((cat, i) => (
-        <button
-          key={cat.id}
-          onClick={() => onSelect(i)}
-          aria-current={i === activeIndex}
-          className="rounded-full border px-4 py-2 text-xs uppercase tracking-[0.12em] transition-colors"
-          style={{
-            borderColor: i === activeIndex ? cat.accent : "rgba(253,246,227,0.25)",
-            background: i === activeIndex ? `${cat.accent}22` : "rgba(253,246,227,0.04)",
-            color: "#fdf6e3",
-          }}
-        >
-          {cat.label}
-        </button>
-      ))}
-    </nav>
   );
 }

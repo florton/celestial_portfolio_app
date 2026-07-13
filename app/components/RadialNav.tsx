@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MutableRefObject,
+} from "react";
 import {
   animate,
   motion,
@@ -85,6 +91,9 @@ type RadialNavProps = {
   rotation: MotionValue<number>;
   activeIndex: number;
   onActiveChange: (index: number) => void;
+  /** Populated with a step handler so external controls (e.g. header arrows)
+   *  can advance the wheel by one category. */
+  controlsRef?: MutableRefObject<((dir: 1 | -1) => void) | null>;
 };
 
 export default function RadialNav({
@@ -92,6 +101,7 @@ export default function RadialNav({
   rotation,
   activeIndex,
   onActiveChange,
+  controlsRef,
 }: RadialNavProps) {
   const [geo, setGeo] = useState<Geo>(() => computeGeo(1280, 800));
   const [mounted, setMounted] = useState(false);
@@ -168,6 +178,9 @@ export default function RadialNav({
   };
 
   const step1 = (dir: 1 | -1) => snapTo(Math.round(-rotation.get() / step) + dir);
+
+  // Expose the step handler so header arrows can drive the wheel.
+  if (controlsRef) controlsRef.current = step1;
 
   const pointerAngle = (clientX: number, clientY: number) =>
     (Math.atan2(clientY - geo.cy, clientX - geo.cx) * 180) / Math.PI;
@@ -288,6 +301,42 @@ export default function RadialNav({
         aria-hidden
       />
     </>
+  );
+}
+
+export function ArrowButton({
+  label,
+  direction,
+  onClick,
+}: {
+  label: string;
+  direction: "left" | "right";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="flex h-11 w-11 items-center justify-center rounded-full border border-[#fdf6e3]/25 bg-[#fdf6e3]/[0.06] text-[#fdf6e3]/80 backdrop-blur-sm transition-colors hover:border-[#fdf6e3]/60 hover:bg-[#fdf6e3]/15 hover:text-[#fdf6e3] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+    >
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2.25}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {direction === "left" ? (
+          <polyline points="15 5 8 12 15 19" />
+        ) : (
+          <polyline points="9 5 16 12 9 19" />
+        )}
+      </svg>
+    </button>
   );
 }
 
