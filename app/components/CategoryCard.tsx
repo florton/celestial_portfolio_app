@@ -14,6 +14,11 @@ export default function CategoryCard({
   category: Category;
   reduced: boolean;
 }) {
+  // Every project links out externally, so the "Explore" CTA points at the
+  // category's primary (first) link rather than a non-existent /:id route.
+  const primary = category.projects.find((p) => p.href)?.href;
+  const primaryExternal =
+    primary?.startsWith("http") || primary?.endsWith(".pdf");
   return (
     <div className="pointer-events-auto absolute bottom-6 right-6 z-30 w-[min(94vw,440px)]">
       <AnimatePresence mode="wait">
@@ -45,11 +50,13 @@ export default function CategoryCard({
 
           <ul className="mt-4 flex flex-col divide-y divide-[#fdf6e3]/10 border-y border-[#fdf6e3]/10">
             {category.projects.map((p) => {
-              const external = p.href?.startsWith("http");
+              // Open external URLs and PDF downloads in a new tab.
+              const external =
+                p.href?.startsWith("http") || p.href?.endsWith(".pdf");
               return (
                 <li key={p.title}>
                   <a
-                    href={p.href ?? `/${category.id}`}
+                    href={p.href ?? primary ?? "#"}
                     target={external ? "_blank" : undefined}
                     rel={external ? "noopener noreferrer" : undefined}
                     className="group flex items-center justify-between gap-3 py-3 transition-colors hover:text-[#fdf6e3]"
@@ -70,16 +77,20 @@ export default function CategoryCard({
             })}
           </ul>
 
-          <a
-            href={`/${category.id}`}
-            className="mt-5 inline-flex items-center gap-1.5 font-[var(--font-display)] text-xs uppercase tracking-[0.16em] transition-opacity hover:opacity-80"
-            style={{ color: "#fdf6e3" }}
-          >
-            Explore {category.label}
-            <span aria-hidden style={{ color: category.accent }}>
-              →
-            </span>
-          </a>
+          {primary && (
+            <a
+              href={primary}
+              target={primaryExternal ? "_blank" : undefined}
+              rel={primaryExternal ? "noopener noreferrer" : undefined}
+              className="mt-5 inline-flex items-center gap-1.5 font-[var(--font-display)] text-xs uppercase tracking-[0.16em] transition-opacity hover:opacity-80"
+              style={{ color: "#fdf6e3" }}
+            >
+              Explore {category.label}
+              <span aria-hidden style={{ color: category.accent }}>
+                {primaryExternal ? "↗" : "→"}
+              </span>
+            </a>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -18,7 +18,7 @@ const body = EB_Garamond({
 export const metadata: Metadata = {
   title: "Flanders Lorton — Senior Fullstack Developer",
   description:
-    "Portfolio of Flanders Lorton: production React, performance, and motion — charted as a celestial atlas.",
+    "Portfolio of Flanders Lorton, Senior Fullstack Developer: production web apps, custom WebGL rendering, and interactive work — charted as a celestial atlas.",
 };
 
 export default function RootLayout({

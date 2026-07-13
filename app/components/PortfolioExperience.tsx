@@ -35,7 +35,14 @@ export default function PortfolioExperience() {
         <h1 className="mt-2 font-[var(--font-display)] text-3xl uppercase tracking-[0.16em] text-[#fdf6e3] sm:text-5xl">
           Flanders Lorton
         </h1>
-        <p className="mt-3 font-[var(--font-body)] text-base italic text-[#fdf6e3]/55">
+        <p className="mt-3 font-[var(--font-body)] text-base text-[#fdf6e3]/75 sm:text-lg">
+          Senior Fullstack Developer · 8+ years shipping production web apps
+          serving thousands of users.
+        </p>
+        <p className="mt-2 font-[var(--font-body)] text-xs uppercase tracking-[0.22em] text-[#fdf6e3]/50">
+          React · TypeScript · Node · Go · GraphQL · AWS
+        </p>
+        <p className="mt-2 font-[var(--font-body)] text-sm italic text-[#fdf6e3]/40">
           {reduced
             ? "Choose a constellation"
             : "Drag the sky, scroll, or use the arrow keys"}
