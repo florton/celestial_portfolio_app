@@ -86,6 +86,122 @@ function mod(n: number, m: number) {
   return ((n % m) + m) % m;
 }
 
+/**
+ * Engraved compass rose behind the wheel's celestial center (bottom-right).
+ * Purely decorative: turns 1:1 with the sky, and stays faded so the category
+ * card floating above it remains readable.
+ */
+function CompassRose({
+  geo,
+  rotation,
+}: {
+  geo: Geo;
+  rotation: MotionValue<number>;
+}) {
+  const R = Math.min(geo.vw, geo.vh) * 0.75;
+  // Polar helper in compass convention: 0° = north (up), clockwise.
+  const pt = (deg: number, r: number) => {
+    const a = ((deg - 90) * Math.PI) / 180;
+    return [Math.cos(a) * r, Math.sin(a) * r] as const;
+  };
+  // Degree ring: a tick every 5°, heavier every 15°, heaviest at cardinals.
+  const ticks = Array.from({ length: 72 }, (_, i) => {
+    const deg = i * 5;
+    const len = i % 18 === 0 ? 12 : i % 3 === 0 ? 8 : 4.5;
+    const [x1, y1] = pt(deg, 97);
+    const [x2, y2] = pt(deg, 97 - len);
+    return { x1, y1, x2, y2, major: i % 18 === 0 };
+  });
+  // Each point of the rose is a two-tone kite: one half filled, one hollow.
+  const rosePoint = (deg: number, len: number, hw: number) => {
+    const [tx, ty] = pt(deg, len);
+    const [lx, ly] = pt(deg - 90, hw);
+    const [rx, ry] = pt(deg + 90, hw);
+    return {
+      filled: `${tx},${ty} ${rx},${ry} 0,0`,
+      hollow: `${tx},${ty} ${lx},${ly} 0,0`,
+    };
+  };
+  const points = [
+    ...[45, 135, 225, 315].map((d) => rosePoint(d, 52, 6.5)),
+    ...[0, 90, 180, 270].map((d) => rosePoint(d, 82, 9)),
+  ];
+  const letters = [
+    ["N", 0],
+    ["E", 90],
+    ["S", 180],
+    ["W", 270],
+  ] as const;
+
+  return (
+    <motion.div
+      className="absolute will-change-transform"
+      style={{
+        left: geo.cx - R,
+        top: geo.cy - R,
+        width: R * 2,
+        height: R * 2,
+        rotate: rotation,
+        opacity: 0.2,
+      }}
+    >
+      <svg viewBox="-115 -115 230 230" className="h-full w-full" fill="none">
+        <g stroke="#fdf6e3">
+          <circle r="112" strokeOpacity="0.35" strokeWidth="0.5" />
+          <circle r="97" strokeOpacity="0.8" strokeWidth="1" />
+          <circle r="85" strokeOpacity="0.5" strokeWidth="0.6" />
+          <circle r="58" strokeOpacity="0.3" strokeWidth="0.5" />
+          <circle r="3" strokeOpacity="0.8" strokeWidth="1" />
+          <line x1="-97" x2="97" strokeOpacity="0.15" strokeWidth="0.5" />
+          <line y1="-97" y2="97" strokeOpacity="0.15" strokeWidth="0.5" />
+          {ticks.map((t, i) => (
+            <line
+              key={i}
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y2}
+              strokeOpacity={t.major ? 0.9 : 0.45}
+              strokeWidth={t.major ? 1 : 0.5}
+            />
+          ))}
+        </g>
+        {points.map((p, i) => (
+          <g key={i}>
+            <polygon points={p.filled} fill="#fdf6e3" fillOpacity="0.8" />
+            <polygon
+              points={p.hollow}
+              fill="#fdf6e3"
+              fillOpacity="0.18"
+              stroke="#fdf6e3"
+              strokeOpacity="0.6"
+              strokeWidth="0.5"
+            />
+          </g>
+        ))}
+        {letters.map(([ch, d]) => {
+          const [x, y] = pt(d, 106);
+          return (
+            <text
+              key={ch}
+              x={x}
+              y={y}
+              fill="#fdf6e3"
+              fillOpacity="0.9"
+              fontSize="11"
+              textAnchor="middle"
+              dominantBaseline="central"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {ch}
+            </text>
+          );
+        })}
+      </svg>
+    </motion.div>
+  );
+}
+
 type RadialNavProps = {
   categories: Category[];
   rotation: MotionValue<number>;
@@ -108,6 +224,7 @@ export default function RadialNav({
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
   const draggingRef = useRef(false);
   const lastAngleRef = useRef(0);
+  const dragStartRotationRef = useRef(0);
   const scrollIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastActiveRef = useRef(activeIndex);
 
@@ -166,8 +283,7 @@ export default function RadialNav({
     });
   };
 
-  const snapToNearest = () => {
-    const idx = Math.round(-rotation.get() / step);
+  const snapToIndex = (idx: number) => {
     stopAnim();
     animRef.current = animate(rotation, -idx * step, {
       type: "spring",
@@ -176,6 +292,8 @@ export default function RadialNav({
       restDelta: 0.01,
     });
   };
+
+  const snapToNearest = () => snapToIndex(Math.round(-rotation.get() / step));
 
   const step1 = (dir: 1 | -1) => snapTo(Math.round(-rotation.get() / step) + dir);
 
@@ -189,6 +307,7 @@ export default function RadialNav({
     draggingRef.current = true;
     stopAnim();
     lastAngleRef.current = pointerAngle(e.clientX, e.clientY);
+    dragStartRotationRef.current = rotation.get();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
@@ -206,7 +325,15 @@ export default function RadialNav({
     if (!draggingRef.current) return;
     draggingRef.current = false;
     (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
-    snapToNearest();
+    // Light commit: a drag past ~1/5 of a step advances to the next category
+    // in the drag direction, rather than bouncing back until the halfway mark.
+    const moved = rotation.get() - dragStartRotationRef.current;
+    const startIdx = Math.round(-dragStartRotationRef.current / step);
+    let idx = Math.round(-rotation.get() / step);
+    if (idx === startIdx && Math.abs(moved) > step * 0.2) {
+      idx = startIdx - Math.sign(moved);
+    }
+    snapToIndex(idx);
   };
 
   const onWheelScroll = (e: React.WheelEvent) => {
@@ -244,6 +371,10 @@ export default function RadialNav({
         aria-label="Portfolio categories"
         aria-activedescendant={`wheel-node-${categories[activeIndex].id}`}
       >
+        {/* Compass rose at the celestial center — painted first so the stars,
+            orbit ring, and bodies all layer above it. */}
+        <CompassRose geo={geo} rotation={rotation} />
+
         {/* Star field — rotates 1:1 with the wheel around the same center, so
             the sky turns together with the bodies. */}
         <motion.svg
