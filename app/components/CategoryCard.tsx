@@ -56,13 +56,28 @@ export default function CategoryCard({
                     href={p.href ?? primary ?? "#"}
                     target={external ? "_blank" : undefined}
                     rel={external ? "noopener noreferrer" : undefined}
-                    className="group flex items-center justify-between gap-3 py-3 transition-colors hover:text-[#fdf6e3]"
+                    className="group flex items-start justify-between gap-3 py-3 transition-colors hover:text-[#fdf6e3]"
                   >
-                    <span className="text-[17px] font-semibold text-[#fdf6e3]/90 group-hover:text-[#fdf6e3]">
-                      {p.title}
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <span className="text-[17px] font-semibold text-[#fdf6e3]/90 group-hover:text-[#fdf6e3]">
+                        {p.title}
+                      </span>
+                      {/* Collapsed by default; expands on hover/focus. Touch
+                          devices have no hover, so keep it always visible there. */}
+                      <span className="grid [grid-template-rows:0fr] transition-[grid-template-rows] duration-300 motion-reduce:transition-none group-hover:[grid-template-rows:1fr] group-focus-visible:[grid-template-rows:1fr] pointer-coarse:[grid-template-rows:1fr]">
+                        <span className="overflow-hidden text-[13px] leading-snug text-[#fdf6e3]/60">
+                          {p.blurb}
+                        </span>
+                      </span>
+                      <span
+                        className="text-[11px] uppercase tracking-[0.14em]"
+                        style={{ color: `${category.accent}cc` }}
+                      >
+                        {p.stack.join(" · ")}
+                      </span>
                     </span>
                     <span
-                      className="text-base transition-transform group-hover:translate-x-0.5"
+                      className="mt-0.5 text-base transition-transform group-hover:translate-x-0.5"
                       style={{ color: category.accent }}
                       aria-hidden
                     >

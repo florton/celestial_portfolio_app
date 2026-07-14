@@ -53,13 +53,6 @@ export const categories: Category[] = [
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
       {
-        title: "Mile Hay Souk",
-        blurb:
-          "Production marketing and commerce site built and shipped for a live client.",
-        stack: ["Next.js", "React", "Client work"],
-        href: "https://milehaysouk.com/",
-      },
-      {
         title: "Ceres Ceive",
         blurb:
           "Streetwear brand concept site — art direction, layout, and interaction design.",
@@ -71,6 +64,13 @@ export const categories: Category[] = [
         blurb: "Playful product concept site exploring motion and micro-interactions.",
         stack: ["HTML/CSS", "JS", "Concept"],
         href: "https://flanderslorton.com/flossmore.html",
+      },
+      {
+        title: "Mile Hay Souk",
+        blurb:
+          "Production marketing and commerce site built and shipped for a live client.",
+        stack: ["Next.js", "React", "Client work"],
+        href: "https://milehaysouk.com/",
       },
     ],
   },
@@ -98,7 +98,7 @@ export const categories: Category[] = [
         href: "https://www.linkedin.com/in/flanders-lorton/",
       },
       {
-        title: "Download résumé",
+        title: "Download Résumé",
         blurb: "Full experience, education, and tech stack as a one-page PDF.",
         stack: ["PDF"],
         href: "/flanders-lorton-resume.pdf",
