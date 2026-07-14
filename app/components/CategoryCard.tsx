@@ -25,7 +25,7 @@ export default function CategoryCard({
           animate={{ opacity: 1, y: 0 }}
           exit={reduced ? undefined : { opacity: 0, y: -10 }}
           transition={{ duration: 0.35 }}
-          className="rounded-2xl border p-7 backdrop-blur-md"
+          className="rounded-2xl border p-5 backdrop-blur-md sm:p-6"
           style={{
             borderColor: "rgba(253,246,227,0.14)",
             background: "rgba(8,10,22,0.55)",
@@ -45,7 +45,7 @@ export default function CategoryCard({
             </span>
           </div>
 
-          <ul className="mt-4 flex flex-col divide-y divide-[#fdf6e3]/10 border-y border-[#fdf6e3]/10">
+          <ul className="mt-3 flex flex-col divide-y divide-[#fdf6e3]/10 border-y border-[#fdf6e3]/10">
             {category.projects.map((p) => {
               // Open external URLs and PDF downloads in a new tab.
               const external =
@@ -56,15 +56,14 @@ export default function CategoryCard({
                     href={p.href ?? primary ?? "#"}
                     target={external ? "_blank" : undefined}
                     rel={external ? "noopener noreferrer" : undefined}
-                    className="group flex items-start justify-between gap-3 py-3 transition-colors hover:text-[#fdf6e3]"
+                    className="group flex items-start justify-between gap-3 py-2.5 transition-colors hover:text-[#fdf6e3]"
                   >
-                    <span className="flex min-w-0 flex-col gap-1">
+                    <span className="flex min-w-0 flex-col gap-0.5">
                       <span className="text-[17px] font-semibold text-[#fdf6e3]/90 group-hover:text-[#fdf6e3]">
                         {p.title}
                       </span>
-                      {/* Collapsed by default; expands on hover/focus. Touch
-                          devices have no hover, so keep it always visible there. */}
-                      <span className="grid [grid-template-rows:0fr] transition-[grid-template-rows] duration-300 motion-reduce:transition-none group-hover:[grid-template-rows:1fr] group-focus-visible:[grid-template-rows:1fr] pointer-coarse:[grid-template-rows:1fr]">
+                      {/* Collapsed by default; expands on hover/focus (desktop only). */}
+                      <span className="grid [grid-template-rows:0fr] transition-[grid-template-rows] duration-300 motion-reduce:transition-none group-hover:[grid-template-rows:1fr] group-focus-visible:[grid-template-rows:1fr]">
                         <span className="overflow-hidden text-[13px] leading-snug text-[#fdf6e3]/60">
                           {p.blurb}
                         </span>

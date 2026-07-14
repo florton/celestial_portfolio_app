@@ -62,7 +62,7 @@ export default function Backdrop({
 
       {/* Rolling hills. Tinted silhouettes, layered for depth. */}
       <svg
-        className="absolute bottom-0 left-0 h-[40vh] w-full"
+        className="absolute bottom-0 left-0 h-[40dvh] w-full"
         viewBox="0 0 100 46"
         preserveAspectRatio="none"
       >

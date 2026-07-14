@@ -22,7 +22,9 @@ export default function PortfolioExperience() {
   const step = (dir: 1 | -1) => stepRef.current?.(dir);
 
   return (
-    <main className="relative flex min-h-screen flex-col">
+    // dvh (not vh/screen): on mobile, 100vh includes the space behind the
+    // address bar, forcing an awkward scroll. dvh tracks the visible height.
+    <main className="relative flex min-h-dvh flex-col">
       <Backdrop
         rotation={rotation}
         categories={categories}
@@ -77,7 +79,7 @@ export default function PortfolioExperience() {
 
         {/* Fixed "current plate" label in the lower-left, over the hills and
             clear of both the bodies (upper-left) and the card (lower-right). */}
-        <div className="pointer-events-none absolute bottom-[9vh] left-[5vw] z-30 max-w-[46vw]">
+        <div className="pointer-events-none absolute bottom-[9dvh] left-[5vw] z-30 max-w-[46vw]">
           <AnimatePresence mode="wait">
             <motion.div
               key={active.id}
