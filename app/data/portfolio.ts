@@ -131,13 +131,7 @@ export const categories: Category[] = [
         blurb: "Full work history and 8+ years of experience.",
         stack: ["in/flanders-lorton"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
-      },
-      {
-        title: "Résumé (PDF)",
-        blurb: "One-page summary of experience, education, and stack.",
-        stack: ["Download"],
-        href: "/flanders-lorton-resume.pdf",
-      },
+      }
     ],
   },
   {
