@@ -38,7 +38,7 @@ export type Category = {
 export const categories: Category[] = [
   {
     id: "web",
-    label: "Web Apps",
+    label: "Web Sites & Apps",
     tagline: "Production fullstack, shipped",
     accent: "#f0a72e",
     body: "sun",
@@ -53,17 +53,11 @@ export const categories: Category[] = [
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
       {
-        title: "Ceres Ceive",
+        title: "Ceres Ceive Streetwear",
         blurb:
           "Streetwear brand concept site — art direction, layout, and interaction design.",
         stack: ["Design", "Frontend", "Branding"],
         href: "https://flanderslorton.com/ceresceive.html",
-      },
-      {
-        title: "Floss More",
-        blurb: "Playful product concept site exploring motion and micro-interactions.",
-        stack: ["HTML/CSS", "JS", "Concept"],
-        href: "https://flanderslorton.com/flossmore.html",
       },
       {
         title: "Mile Hay Souk",
