@@ -46,9 +46,9 @@ export const categories: Category[] = [
     sky: ["#103a72", "#3f86c4", "#ffe0a0"],
     projects: [
       {
-        title: "Edwin — K-12 Education Platform",
+        title: "Edwin: K-12 Education Platform",
         blurb:
-          "Led fullstack development of a K-12 learning platform serving thousands of students across Canada — rewrote the app from the ground up twice to modernize the architecture, backed by GraphQL, gRPC, and Go microservices with MongoDB aggregation tuning.",
+          "Led fullstack development of a K-12 learning platform serving thousands of students across Canada. Rewrote the app from the ground up twice to modernize the architecture, backed by GraphQL, gRPC, and Go microservices with MongoDB aggregation tuning.",
         stack: ["React", "TypeScript", "Go", "GraphQL", "gRPC", "MongoDB"],
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
@@ -77,14 +77,14 @@ export const categories: Category[] = [
     sky: ["#0c2a22", "#2f7a55", "#e0b258"],
     projects: [
       {
-        title: "Principal Fullstack Developer — Nelson Education",
+        title: "Principal Fullstack Developer, Nelson Education",
         blurb:
-          "2018–2026: architected and twice-rewrote Edwin, a K-12 platform serving thousands of students. Built GraphQL/gRPC/Go microservices on an 8–10 person team shipping biweekly, and drove stack-wide performance work — caching, pagination, lazy loading, and MongoDB tuning.",
+          "2018–2026: architected and twice-rewrote Edwin, a K-12 platform serving thousands of students. Built GraphQL/gRPC/Go microservices on an 8–10 person team shipping biweekly, and drove stack-wide performance work: caching, pagination, lazy loading, and MongoDB tuning.",
         stack: ["React", "TypeScript", "Node", "Go", "AWS"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       },
       {
-        title: "Earlier — Taboola & LMU",
+        title: "Earlier: Taboola & LMU",
         blurb:
           "Frontend intern at Taboola shipping content-control features and API endpoints (React/Redux/Node/Java Spring). B.S. Computer Science with Honors, Cum Laude, from Loyola Marymount University.",
         stack: ["React", "Redux", "Java Spring"],
@@ -109,7 +109,7 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Email",
-        blurb: "Fastest way to reach me — I reply within a day.",
+        blurb: "Fastest way to reach me. I reply within a day.",
         stack: ["flanders.lorton@gmail.com"],
         href: "mailto:flanders.lorton@gmail.com",
       },
@@ -138,7 +138,7 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Bandcamp",
-        blurb: "Original music — writing, recording, and production.",
+        blurb: "Original music: writing, recording, and production.",
         stack: ["Bandcamp", "Original"],
         href: "https://flanderslorton.bandcamp.com/",
       },
@@ -179,7 +179,7 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Handcrafted Industries",
-        blurb: "Game design and development — playable projects and experiments.",
+        blurb: "Game design and development: playable projects and experiments.",
         stack: ["Game Dev", "Interactive"],
         href: "https://handcrafted.industries/",
       },

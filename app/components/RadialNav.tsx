@@ -63,7 +63,7 @@ function rand(n: number) {
 
 /**
  * A uniform-density disc of stars around the wheel center. A disc is
- * rotation-invariant, so spinning it never opens gaps at any angle — and with
+ * rotation-invariant, so spinning it never opens gaps at any angle, and with
  * overflow visible the off-canvas portion still paints. Random radius/angle
  * give a natural, clump-free night sky.
  */
@@ -371,11 +371,11 @@ export default function RadialNav({
         aria-label="Portfolio categories"
         aria-activedescendant={`wheel-node-${categories[activeIndex].id}`}
       >
-        {/* Compass rose at the celestial center — painted first so the stars,
+        {/* Compass rose at the celestial center, painted first so the stars,
             orbit ring, and bodies all layer above it. */}
         <CompassRose geo={geo} rotation={rotation} />
 
-        {/* Star field — rotates 1:1 with the wheel around the same center, so
+        {/* Star field, rotates 1:1 with the wheel around the same center, so
             the sky turns together with the bodies. */}
         <motion.svg
           className="absolute inset-0 h-full w-full will-change-transform"

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Celestial-atlas base. Fixed scene colors — no light/dark inversion. */
+  /* Celestial-atlas base. Fixed scene colors, no light/dark inversion. */
   --background: #05060c;
   --foreground: #f3ead0;
   --gold: #d8b75e;

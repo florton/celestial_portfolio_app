@@ -1,5 +1,5 @@
 /**
- * Celestial-atlas palette — hand-tinted engraving on a deep night sky.
+ * Celestial-atlas palette: hand-tinted engraving on a deep night sky.
  * These are a physical-color scene, so they stay fixed in light/dark mode.
  */
 export const sky = {

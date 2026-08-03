@@ -27,7 +27,7 @@ type Props = {
 
 /**
  * Soft, Alto-style celestial body: layered radial-gradient bloom with no hard
- * outlines. Static SVG — never re-renders during wheel rotation. Bloom
+ * outlines. Static SVG that never re-renders during wheel rotation. Bloom
  * strengthens when the body is the active (focused) one.
  */
 export default function CelestialBody({
