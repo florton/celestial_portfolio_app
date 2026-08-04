@@ -527,6 +527,7 @@ function WheelNode({
       <CelestialBody
         kind={category.body}
         accent={category.accent}
+        hues={category.hues}
         size={(isActive ? 178 : 146) * category.scale * vs}
         active={isActive}
       />

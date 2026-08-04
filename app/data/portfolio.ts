@@ -11,7 +11,8 @@ export type CelestialKind =
   | "comet"
   | "star"
   | "moon"
-  | "constellation";
+  | "constellation"
+  | "galaxy";
 
 export type Category = {
   id: string;
@@ -20,6 +21,8 @@ export type Category = {
   tagline: string;
   /** Accent color (hex). Tints this category's celestial body + the sky glow. */
   accent: string;
+  /** Optional companion hues [arm, wisp] for multi-tone bodies (see galaxy). */
+  hues?: [string, string];
   /** Which celestial body represents this category on the wheel. */
   body: CelestialKind;
   /** Relative size of this body on the wheel (1 = base). */
@@ -39,7 +42,7 @@ export const categories: Category[] = [
   {
     id: "web",
     label: "Web Apps & Custom Sites",
-    tagline: "Production fullstack, shipped",
+    tagline: "Apps people actually use",
     accent: "#f0a72e",
     body: "sun",
     scale: 1.35,
@@ -48,22 +51,83 @@ export const categories: Category[] = [
       {
         title: "Edwin: K-12 Education Platform",
         blurb:
-          "Led fullstack development of a K-12 learning platform serving thousands of students across Canada. Rewrote the app from the ground up twice to modernize the architecture, backed by GraphQL, gRPC, and Go microservices with MongoDB aggregation tuning.",
+          "A K-12 learning platform used by thousands of students across Canada. I led the fullstack work and rebuilt it from scratch twice as the architecture aged out. GraphQL and Go services underneath, plus a lot of time spent getting MongoDB aggregations to behave.",
         stack: ["React", "TypeScript", "Go", "GraphQL", "gRPC", "MongoDB"],
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
       {
         title: "Handcrafted Industries",
-        blurb: "Retro arcade style concept site for 2D/3D game projects",
+        blurb: "An arcade-styled site I built to house my 2D and 3D game projects.",
         stack: ["HTML", "Vanilla JS", "Web Games"],
         href: "https://handcrafted.industries/",
       },
       {
         title: "Ceres Ceive Streetwear",
         blurb:
-          "Streetwear brand concept site showcasing custom clothing designs",
+          "Concept site for a streetwear line, built to show off custom clothing designs.",
         stack: ["HTML", "W3.CSS", "Fashion"],
         href: "https://flanderslorton.com/ceresceive.html",
+      },
+    ],
+  },
+  {
+    id: "art",
+    label: "Art",
+    tagline: "Rooms you walk through",
+    accent: "#e06a9c",
+    hues: ["#c9a6f0", "#f0b98a"],
+    body: "galaxy",
+    scale: 1.15,
+    sky: ["#1a3a6e", "#6a7ec0", "#f2c2a6"],
+    projects: [
+      {
+        title: "Interactive Gallery",
+        blurb:
+          "Eight rooms of drawings, paintings, collages, and photos. You walk through it instead of scrolling it.",
+        stack: ["Drawing", "Painting", "Design"],
+        href: "https://art-gallery-orcin-six.vercel.app/",
+      },
+      {
+        title: "Ink Works",
+        blurb: "Pen and brush pieces, one of the eight rooms.",
+        stack: ["Ink", "Drawing"],
+        href: "https://art-gallery-orcin-six.vercel.app/works/ink/",
+      },
+      {
+        title: "Collages",
+        blurb: "Layered scans, blend-mode passes, and glitched photo cutups.",
+        stack: ["Collage", "Digital"],
+        href: "https://art-gallery-orcin-six.vercel.app/works/collages/",
+      },
+      {
+        title: "Photographs",
+        blurb: "Mostly recent, shot and edited by me.",
+        stack: ["Photography"],
+        href: "https://art-gallery-orcin-six.vercel.app/works/photographs/",
+      },
+    ],
+  },
+  {
+    id: "webgl",
+    label: "3D / WebGL",
+    tagline: "Custom rendering from scratch",
+    accent: "#2ec5db",
+    body: "planet",
+    scale: 1.2,
+    sky: ["#06202e", "#1d7d8e", "#6fd0c0"],
+    projects: [
+      {
+        title: "Custom WebGL Framework",
+        blurb:
+          "A 3D engine written from nothing. Object3D, Matrix, Polygon, and PolygonMesh classes, stacked transform matrices, Blinn-Phong shading in GLSL, and a JSON keyframe tweener on top.",
+        stack: ["WebGL", "GLSL", "JavaScript"],
+        href: "https://flanderslorton.com/webGL.html",
+      },
+      {
+        title: "Three.js Planets",
+        blurb: "A procedurally generated planet scene you can move around in.",
+        stack: ["Three.js", "WebGL", "3D"],
+        href: "https://flanderslorton.com/planets",
       },
     ],
   },
@@ -79,20 +143,20 @@ export const categories: Category[] = [
       {
         title: "Principal Fullstack Developer, Nelson Education",
         blurb:
-          "2018–2026: architected and twice-rewrote Edwin, a K-12 platform serving thousands of students. Built GraphQL/gRPC/Go microservices on an 8–10 person team shipping biweekly, and drove stack-wide performance work: caching, pagination, lazy loading, and MongoDB tuning.",
+          "2018 to 2026. Built and twice rebuilt Edwin on a team of 8 to 10, shipping every two weeks. Wrote the GraphQL, gRPC, and Go services behind it, and owned most of the performance work, from caching and pagination to MongoDB query tuning.",
         stack: ["React", "TypeScript", "Node", "Go", "AWS"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       },
       {
         title: "Earlier: Taboola & LMU",
         blurb:
-          "Frontend intern at Taboola shipping content-control features and API endpoints (React/Redux/Node/Java Spring). B.S. Computer Science with Honors, Cum Laude, from Loyola Marymount University.",
+          "Interned on frontend at Taboola, shipping content-control features and the API endpoints behind them. Before that, a B.S. in Computer Science from Loyola Marymount, cum laude and with honors.",
         stack: ["React", "Redux", "Java Spring"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       },
       {
         title: "Download Résumé",
-        blurb: "Full experience, education, and tech stack as a one-page PDF.",
+        blurb: "One page with the whole history, if you'd rather skim than click.",
         stack: ["PDF"],
         href: "/flanders-lorton-resume.pdf",
       },
@@ -109,19 +173,19 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Email",
-        blurb: "Fastest way to reach me. I reply within a day.",
+        blurb: "Quickest way to get me. I answer within a day.",
         stack: ["flanders.lorton@gmail.com"],
         href: "mailto:flanders.lorton@gmail.com",
       },
       {
         title: "GitHub",
-        blurb: "Source for the projects above and plenty that isn't listed.",
+        blurb: "Source for most of what's here, and a lot that never made the list.",
         stack: ["@florton"],
         href: "https://github.com/florton",
       },
       {
         title: "LinkedIn",
-        blurb: "Full work history and 8+ years of experience.",
+        blurb: "The full work history, if you want the formal version.",
         stack: ["in/flanders-lorton"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       }
@@ -138,33 +202,9 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Bandcamp",
-        blurb: "Original music: writing, recording, and production.",
+        blurb: "Original tracks I wrote, recorded, and produced myself.",
         stack: ["Bandcamp", "Original"],
         href: "https://flanderslorton.bandcamp.com/",
-      },
-    ],
-  },
-  {
-    id: "webgl",
-    label: "3D / WebGL",
-    tagline: "Custom rendering from scratch",
-    accent: "#2ec5db",
-    body: "planet",
-    scale: 1.2,
-    sky: ["#06202e", "#1d7d8e", "#6fd0c0"],
-    projects: [
-      {
-        title: "Custom WebGL Framework",
-        blurb:
-          "Hand-built 3D engine: Object3D, Matrix, Polygon, and PolygonMesh classes with stacked transform matrices, GLSL Blinn-Phong shading, and a JSON keyframe tweener.",
-        stack: ["WebGL", "GLSL", "JavaScript"],
-        href: "https://flanderslorton.com/webGL.html",
-      },
-      {
-        title: "Three.js Planets",
-        blurb: "Interactive procedural planets scene built with Three.js.",
-        stack: ["Three.js", "WebGL", "3D"],
-        href: "https://flanderslorton.com/planets",
       },
     ],
   },
@@ -179,7 +219,8 @@ export const categories: Category[] = [
     projects: [
       {
         title: "Handcrafted Industries",
-        blurb: "Game design and development: playable projects and experiments.",
+        blurb:
+          "The arcade itself. Playable browser games and whatever else I was experimenting with at the time.",
         stack: ["Game Dev", "Interactive"],
         href: "https://handcrafted.industries/",
       },

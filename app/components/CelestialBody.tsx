@@ -21,6 +21,8 @@ function darken(hex: string, f: number) {
 type Props = {
   kind: CelestialKind;
   accent: string;
+  /** Companion hues [arm, wisp] for multi-tone bodies. Falls back to accent. */
+  hues?: [string, string];
   size?: number;
   active?: boolean;
 };
@@ -33,6 +35,7 @@ type Props = {
 export default function CelestialBody({
   kind,
   accent,
+  hues,
   size = 92,
   active = false,
 }: Props) {
@@ -135,6 +138,10 @@ export default function CelestialBody({
       {kind === "constellation" && (
         <Constellation uid={uid} accent={accent} light={light} />
       )}
+
+      {kind === "galaxy" && (
+        <Galaxy uid={uid} accent={accent} light={light} hues={hues} />
+      )}
     </svg>
   );
 }
@@ -164,6 +171,72 @@ function Sparkle({
       </defs>
       <path d="M50 10 L57 50 L50 90 L43 50 Z" fill={`url(#${uid}-rayV)`} />
       <path d="M10 50 L50 43 L90 50 L50 57 Z" fill={`url(#${uid}-rayH)`} />
+    </g>
+  );
+}
+
+/**
+ * Barred spiral seen at a tilt: a faint disc, two tapered arms fading outward
+ * from a blown-out core, and a few field stars caught in the arms. Arms are
+ * tinted with the category's companion hues so it reads multi-toned like a
+ * nebula rather than a single flat accent.
+ */
+function Galaxy({
+  uid,
+  accent,
+  light,
+  hues,
+}: {
+  uid: string;
+  accent: string;
+  light: string;
+  hues?: [string, string];
+}) {
+  const [arm, wisp] = hues ?? [accent, light];
+  // Field stars scattered along the arms, in local (pre-rotation) coords.
+  const dots: [number, number, number][] = [
+    [26, -8, 1.6],
+    [-30, 7, 1.4],
+    [38, 1, 1.2],
+    [-19, -4, 1.1],
+  ];
+  return (
+    <g transform="translate(50 50) rotate(-24)">
+      <defs>
+        {/* Right arm brightens at the core end (bbox left), left arm at the
+            core end too — hence the mirrored gradient axis. */}
+        <linearGradient id={`${uid}-armR`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={light} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={arm} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`${uid}-armL`} x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0%" stopColor={light} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={arm} stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id={`${uid}-core`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={light} />
+          <stop offset="45%" stopColor={wisp} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse rx="44" ry="15" fill={arm} opacity="0.18" />
+      <path d="M2 -3 C22 -14 40 -8 46 6 C36 -2 22 -4 4 3 Z" fill={`url(#${uid}-armR)`} />
+      <path d="M-2 3 C-22 14 -40 8 -46 -6 C-36 2 -22 4 -4 -3 Z" fill={`url(#${uid}-armL)`} />
+      <path
+        d="M3 -5 C16 -16 32 -18 41 -12 C30 -13 16 -9 5 -1 Z"
+        fill={wisp}
+        opacity="0.35"
+      />
+      <path
+        d="M-3 5 C-16 16 -32 18 -41 12 C-30 13 -16 9 -5 1 Z"
+        fill={wisp}
+        opacity="0.35"
+      />
+      <circle r="16" fill={`url(#${uid}-core)`} />
+      <circle r="5" fill={light} />
+      {dots.map(([x, y, r], i) => (
+        <circle key={i} cx={x} cy={y} r={r} fill={light} opacity={0.85} />
+      ))}
     </g>
   );
 }
