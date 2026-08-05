@@ -14,77 +14,20 @@ import {
   type MotionValue,
 } from "motion/react";
 import type { Category } from "@/app/data/portfolio";
+import {
+  computeGeo,
+  makeStars,
+  mod,
+  nearestEquivalentAngle,
+  nightness,
+  type Geo,
+} from "@/app/lib/wheel";
 import CelestialBody from "./CelestialBody";
 
 const NODE = 230; // base node box size in px (scaled by viewport)
 
-type Geo = {
-  cx: number;
-  cy: number;
-  radius: number;
-  focalDeg: number;
-  vw: number;
-  vh: number;
-  /** Viewport scale so the wheel shrinks on small windows. */
-  vs: number;
-};
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-
-/** Wheel center off-canvas bottom-right; focal body lands in the upper-left. */
-function computeGeo(vw: number, vh: number): Geo {
-  const cx = vw * 0.92;
-  const cy = vh * 1.02;
-  const tx = vw * 0.27;
-  const ty = vh * 0.44;
-  const dx = tx - cx;
-  const dy = ty - cy;
-  return {
-    cx,
-    cy,
-    radius: Math.hypot(dx, dy),
-    focalDeg: (Math.atan2(dy, dx) * 180) / Math.PI,
-    vw,
-    vh,
-    vs: clamp(Math.min(vw, vh) / 860, 0.5, 1.1),
-  };
-}
-
-/**
- * A full ring of stars around the wheel center, dense enough that the on-screen
- * portion always looks full. Rotates with the wheel; whether they're *visible*
- * is handled by a day/night opacity so they only show on the night side.
- */
-/** Deterministic hash-noise in [0,1) for natural (non-gridded) scatter. */
-function rand(n: number) {
-  const x = Math.sin(n * 127.1 + 0.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-/**
- * A uniform-density disc of stars around the wheel center. A disc is
- * rotation-invariant, so spinning it never opens gaps at any angle, and with
- * overflow visible the off-canvas portion still paints. Random radius/angle
- * give a natural, clump-free night sky.
- */
-function makeStars(geo: Geo) {
-  const R2 = Math.hypot(geo.cx, geo.cy) * 1.02; // reaches the far corner
-  return Array.from({ length: 600 }, (_, i) => {
-    const ang = rand(i + 1) * Math.PI * 2;
-    const r = Math.sqrt(rand(i + 137)) * R2;
-    const s = rand(i + 251);
-    return {
-      x: geo.cx + Math.cos(ang) * r,
-      y: geo.cy + Math.sin(ang) * r,
-      rad: s > 0.92 ? 2.6 : s > 0.7 ? 1.8 : 1.2,
-      o: 0.32 + rand(i + 379) * 0.42,
-    };
-  });
-}
-
-function mod(n: number, m: number) {
-  return ((n % m) + m) % m;
-}
+/** Pointer travel (px) below which a press on a body counts as a click, not a drag. */
+const CLICK_SLOP = 6;
 
 /**
  * Engraved compass rose behind the wheel's celestial center (bottom-right).
@@ -227,6 +170,7 @@ export default function RadialNav({
   const dragStartRotationRef = useRef(0);
   const scrollIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastActiveRef = useRef(activeIndex);
+  const pressPointRef = useRef({ x: 0, y: 0 });
 
   const count = categories.length;
   const step = 360 / count;
@@ -257,11 +201,10 @@ export default function RadialNav({
 
   // Day/night: stars fade to nothing at the sun (day) and up at the moon
   // (night, half a turn away), smoothly through every category between.
-  const starOpacity = useTransform(rotation, (r) => {
-    const p = mod(-r / step, count);
-    const nightness = (1 - Math.cos((p / count) * 2 * Math.PI)) / 2;
-    return 0.03 + 0.62 * nightness;
-  });
+  const starOpacity = useTransform(
+    rotation,
+    (r) => 0.03 + 0.62 * nightness(r, step, count),
+  );
 
   const stopAnim = () => {
     animRef.current?.stop();
@@ -272,9 +215,7 @@ export default function RadialNav({
     stopAnim();
     // Target the rotationally-equivalent angle nearest the current rotation, so
     // clicking a body never unwinds the full turns scrolling has accumulated.
-    const base = -index * step;
-    const current = rotation.get();
-    const target = base + 360 * Math.round((current - base) / 360);
+    const target = nearestEquivalentAngle(rotation.get(), -index * step);
     animRef.current = animate(rotation, target, {
       type: "spring",
       stiffness: 110,
@@ -297,8 +238,15 @@ export default function RadialNav({
 
   const step1 = (dir: 1 | -1) => snapTo(Math.round(-rotation.get() / step) + dir);
 
-  // Expose the step handler so header arrows can drive the wheel.
-  if (controlsRef) controlsRef.current = step1;
+  // Expose the step handler so header arrows can drive the wheel. Assigned in
+  // an effect rather than during render, which React treats as a side effect.
+  useEffect(() => {
+    if (!controlsRef) return;
+    controlsRef.current = step1;
+    return () => {
+      controlsRef.current = null;
+    };
+  });
 
   const pointerAngle = (clientX: number, clientY: number) =>
     (Math.atan2(clientY - geo.cy, clientX - geo.cx) * 180) / Math.PI;
@@ -308,6 +256,7 @@ export default function RadialNav({
     stopAnim();
     lastAngleRef.current = pointerAngle(e.clientX, e.clientY);
     dragStartRotationRef.current = rotation.get();
+    pressPointRef.current = { x: e.clientX, y: e.clientY };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
@@ -335,6 +284,37 @@ export default function RadialNav({
     }
     snapToIndex(idx);
   };
+
+  /**
+   * Bodies are draggable *and* clickable: a press on one starts the same sky
+   * drag, and only releases that barely moved count as a click. Without this,
+   * making the bodies clickable would swallow every drag that happened to
+   * start on top of one.
+   *
+   * The wheel handler is repeated here for the same reason. The sky surface is
+   * a *sibling* of the bodies, not an ancestor, so a scroll over a body never
+   * bubbles to it — without this, scroll-to-rotate would die wherever a body
+   * sits under the cursor.
+   */
+  const nodePointerHandlers = (onSelect: () => void) => ({
+    onPointerDown,
+    onPointerMove,
+    onWheel: onWheelScroll,
+    onPointerUp: (e: React.PointerEvent) => {
+      const { x, y } = pressPointRef.current;
+      if (
+        draggingRef.current &&
+        Math.hypot(e.clientX - x, e.clientY - y) <= CLICK_SLOP
+      ) {
+        draggingRef.current = false;
+        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+        onSelect();
+        return;
+      }
+      endDrag(e);
+    },
+    onPointerCancel: endDrag,
+  });
 
   const onWheelScroll = (e: React.WheelEvent) => {
     stopAnim();
@@ -364,12 +344,16 @@ export default function RadialNav({
   return (
     <>
       {/* Node + orbit layer: covers the viewport, transparent to pointer events
-          except the bodies themselves. */}
+          except the bodies themselves. This is also the listbox: per the
+          activedescendant pattern the container takes focus and the arrow keys,
+          and the individual options stay out of the tab order. */}
       <div
-        className="pointer-events-none fixed inset-0 z-20"
+        className="pointer-events-none fixed inset-0 z-20 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/40"
         role="listbox"
+        tabIndex={0}
         aria-label="Portfolio categories"
         aria-activedescendant={`wheel-node-${categories[activeIndex].id}`}
+        onKeyDown={onKeyDown}
       >
         {/* Compass rose at the celestial center, painted first so the stars,
             orbit ring, and bodies all layer above it. */}
@@ -411,7 +395,7 @@ export default function RadialNav({
             geo={geo}
             rotation={rotation}
             isActive={i === activeIndex}
-            onSelect={() => snapTo(i)}
+            pointerHandlers={nodePointerHandlers(() => snapTo(i))}
           />
         ))}
       </div>
@@ -420,15 +404,13 @@ export default function RadialNav({
           (z-20) so you can spin from anywhere empty, while clicks on bodies and
           project cards still land. */}
       <div
-        tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onWheel={onWheelScroll}
-        onKeyDown={onKeyDown}
         style={{ touchAction: "none" }}
-        className="fixed inset-0 z-10 cursor-grab outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:cursor-grabbing"
+        className="fixed inset-0 z-10 cursor-grab active:cursor-grabbing"
         aria-hidden
       />
     </>
@@ -478,7 +460,7 @@ function WheelNode({
   geo,
   rotation,
   isActive,
-  onSelect,
+  pointerHandlers,
 }: {
   category: Category;
   index: number;
@@ -486,7 +468,13 @@ function WheelNode({
   geo: Geo;
   rotation: MotionValue<number>;
   isActive: boolean;
-  onSelect: () => void;
+  pointerHandlers: {
+    onPointerDown: (e: React.PointerEvent) => void;
+    onPointerMove: (e: React.PointerEvent) => void;
+    onPointerUp: (e: React.PointerEvent) => void;
+    onPointerCancel: (e: React.PointerEvent) => void;
+    onWheel: (e: React.WheelEvent) => void;
+  };
 }) {
   const { cx, cy, radius, focalDeg, vs } = geo;
   const focalRad = (focalDeg * Math.PI) / 180;
@@ -501,27 +489,34 @@ function WheelNode({
   const scale = useTransform(prox, [-1, 0.3, 1], [0.5, 0.82, 1.2]);
   const opacity = useTransform(prox, [-0.1, 0.45, 1], [0, 0.65, 1]);
   const zIndex = useTransform(prox, (p) => Math.round(p * 100) + 200);
+  // Bodies on the far side of the wheel are faded out; keep them from
+  // intercepting presses meant for the sky behind them.
+  const pointerEvents = useTransform(prox, (p) => (p > 0.1 ? "auto" : "none"));
 
   return (
     <motion.button
       id={`wheel-node-${category.id}`}
+      type="button"
       role="option"
       aria-selected={isActive}
       aria-label={category.label}
-      onClick={onSelect}
-      className="pointer-events-auto absolute left-0 top-0 flex flex-col items-center justify-center gap-2"
+      // Options are driven by the listbox's aria-activedescendant, so they stay
+      // out of the tab order; the container owns focus and the arrow keys.
+      tabIndex={-1}
+      {...pointerHandlers}
+      className="absolute left-0 top-0 flex cursor-pointer flex-col items-center justify-center gap-2 active:cursor-grabbing"
       style={{
         x,
         y,
         scale,
         opacity,
         zIndex,
+        pointerEvents,
         width: nodeBox,
         height: nodeBox,
         marginLeft: -nodeBox / 2,
         marginTop: -nodeBox / 2,
-        pointerEvents: "none",
-        cursor: "inherit"
+        touchAction: "none",
       }}
     >
       <CelestialBody

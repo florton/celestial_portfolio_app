@@ -20,6 +20,37 @@ html {
   background: var(--background);
 }
 
+/**
+ * Project blurbs. Expanded by default, because touch devices have no hover
+ * state and would otherwise never show the description at all. Devices with a
+ * real pointer collapse them and expand on hover/focus, which keeps the
+ * desktop composition uncluttered. The 0fr → 1fr grid row is what makes the
+ * height animatable without a fixed pixel value.
+ */
+.blurb {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 300ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .blurb {
+    grid-template-rows: 0fr;
+  }
+
+  .group:hover .blurb,
+  .group:focus-visible .blurb,
+  .group:focus-within .blurb {
+    grid-template-rows: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blurb {
+    transition: none;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

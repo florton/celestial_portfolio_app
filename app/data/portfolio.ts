@@ -36,7 +36,8 @@ export type Category = {
  * The wheel renders one node per category, evenly spaced around the rim.
  * Order matters twice over: it sets each body's position on the wheel AND the
  * order the sky cycles through. Arranged as a day → dusk → night → dawn loop,
- * with the sun (Web Apps) and moon (Music) placed 180° apart (indices 0 & 3).
+ * with the sun (Web Apps) at index 0 and the darkest skies half a turn away,
+ * where the star field reaches full opacity.
  */
 export const categories: Category[] = [
   {
@@ -141,7 +142,7 @@ export const categories: Category[] = [
     sky: ["#0c2a22", "#2f7a55", "#e0b258"],
     projects: [
       {
-        title: "Principal Fullstack Developer, Nelson Education",
+        title: "Senior Fullstack Developer, Nelson Education",
         blurb:
           "2018 to 2026. Built and twice rebuilt Edwin on a team of 8 to 10, shipping every two weeks. Wrote the GraphQL, gRPC, and Go services behind it, and owned most of the performance work, from caching and pagination to MongoDB query tuning.",
         stack: ["React", "TypeScript", "Node", "Go", "AWS"],
@@ -189,23 +190,6 @@ export const categories: Category[] = [
         stack: ["in/flanders-lorton"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       }
-    ],
-  },
-  {
-    id: "music",
-    label: "Music",
-    tagline: "Original tracks & releases",
-    accent: "#cdd9e8",
-    body: "moon",
-    scale: 1.05,
-    sky: ["#05060f", "#171734", "#463a70"],
-    projects: [
-      {
-        title: "Bandcamp",
-        blurb: "Original tracks I wrote, recorded, and produced myself.",
-        stack: ["Bandcamp", "Original"],
-        href: "https://flanderslorton.bandcamp.com/",
-      },
     ],
   },
   {

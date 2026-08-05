@@ -62,8 +62,9 @@ export default function CategoryCard({
                       <span className="text-[17px] font-semibold text-[#fdf6e3]/90 group-hover:text-[#fdf6e3]">
                         {p.title}
                       </span>
-                      {/* Collapsed by default; expands on hover/focus (desktop only). */}
-                      <span className="grid [grid-template-rows:0fr] transition-[grid-template-rows] duration-300 motion-reduce:transition-none group-hover:[grid-template-rows:1fr] group-focus-visible:[grid-template-rows:1fr]">
+                      {/* Expanded on touch, hover-to-expand on pointer devices.
+                          See `.blurb` in globals.css. */}
+                      <span className="blurb">
                         <span className="overflow-hidden text-[13px] leading-snug text-[#fdf6e3]/60">
                           {p.blurb}
                         </span>
