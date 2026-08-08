@@ -57,7 +57,8 @@ export const categories: Category[] = [
       },
       {
         title: "Handcrafted Industries",
-        blurb: "An arcade-styled site I built to house my 2D and 3D game projects.",
+        blurb:
+          "A browser game portal I designed and built to publish my own 2D and 3D titles, with an arcade-inspired interface.",
         stack: ["HTML", "Vanilla JS", "Web Games"],
         href: "https://handcrafted.industries/",
       },
@@ -87,24 +88,6 @@ export const categories: Category[] = [
         stack: ["Drawing", "Painting", "Design"],
         href: "https://art-gallery-orcin-six.vercel.app/",
       },
-      {
-        title: "Ink Works",
-        blurb: "Pen and brush pieces, one of the eight rooms.",
-        stack: ["Ink", "Drawing"],
-        href: "https://art-gallery-orcin-six.vercel.app/works/ink/",
-      },
-      {
-        title: "Collages",
-        blurb: "Layered scans, blend-mode passes, and glitched photo cutups.",
-        stack: ["Collage", "Digital"],
-        href: "https://art-gallery-orcin-six.vercel.app/works/collages/",
-      },
-      {
-        title: "Photographs",
-        blurb: "Mostly recent, shot and edited by me.",
-        stack: ["Photography"],
-        href: "https://art-gallery-orcin-six.vercel.app/works/photographs/",
-      },
     ],
   },
   {
@@ -116,6 +99,13 @@ export const categories: Category[] = [
     scale: 1.2,
     sky: ["#06202e", "#1d7d8e", "#6fd0c0"],
     projects: [
+      {
+        title: "1,000,000 Particle Simulator",
+        blurb:
+          "A million particles simulated and drawn at 60 fps in the browser. A WebGPU compute shader integrates the whole population on-GPU — including a mesh solver for a self-gravitating galaxy — with a WebGL2 transform-feedback fallback and a virtualized sidebar that scrolls all million rows on ~33 live DOM nodes.",
+        stack: ["WebGPU", "WGSL", "TypeScript", "WebGL2", "Vite"],
+        href: "https://flanderslorton.com/particles/",
+      },
       {
         title: "Custom WebGL Framework",
         blurb:
@@ -220,7 +210,7 @@ export const categories: Category[] = [
       {
         title: "Handcrafted Industries",
         blurb:
-          "The arcade itself. Playable browser games and whatever else I was experimenting with at the time.",
+          "My catalogue of playable browser games, each written from scratch and hosted under one arcade-style front end.",
         stack: ["Game Dev", "Interactive"],
         href: "https://handcrafted.industries/",
       },
