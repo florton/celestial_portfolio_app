@@ -56,18 +56,18 @@ export const categories: Category[] = [
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
       {
+        title: "Feelings Typewriter",
+        blurb:
+          "A keyboard where the keys are ideas instead of letters. Sixteen material words compose into a point in an authored 8-dimensional space, rendered as a star chart you navigate, and every gesture resolves to a short poem that replays exactly from its seed. Zero dependencies, no build step, 18ms p99 from keypress to paint.",
+        stack: ["JavaScript", "Canvas", "ES Modules", "Interaction Design"],
+        href: "https://flanderslorton.com/emotions/",
+      },
+      {
         title: "Handcrafted Industries",
         blurb:
           "A browser game portal I designed and built to publish my own 2D and 3D titles, with an arcade-inspired interface.",
         stack: ["HTML", "Vanilla JS", "Web Games"],
         href: "https://handcrafted.industries/",
-      },
-      {
-        title: "Ceres Ceive Streetwear",
-        blurb:
-          "Concept site for a streetwear line, built to show off custom clothing designs.",
-        stack: ["HTML", "W3.CSS", "Fashion"],
-        href: "https://flanderslorton.com/ceresceive.html",
       },
     ],
   },
