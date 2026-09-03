@@ -56,6 +56,13 @@ export const categories: Category[] = [
         href: "https://www.edwin.app/resources-articles/edwin101",
       },
       {
+        title: "Next Bridge",
+        blurb:
+          "A library for typed signals across the Next.js server/client boundary. Server Actions return plain-data instructions and a slice store applies them with inference intact, so a wrong payload fails tsc instead of production. ~1.4 kB min+gzip, zero dependencies, built only on documented App Router surfaces.",
+        stack: ["TypeScript", "React", "Next.js", "Library Design"],
+        href: "https://github.com/florton/NextBridge",
+      },
+      {
         title: "Feelings Typewriter",
         blurb:
           "A keyboard where the keys are ideas instead of letters. Sixteen material words compose into a point in an authored 8-dimensional space, rendered as a star chart you navigate, and every gesture resolves to a short poem that replays exactly from its seed. Zero dependencies, no build step, 18ms p99 from keypress to paint.",
@@ -63,11 +70,11 @@ export const categories: Category[] = [
         href: "https://flanderslorton.com/emotions/",
       },
       {
-        title: "Handcrafted Industries",
+        title: "Margin: Poetry Generator",
         blurb:
-          "A browser game portal I designed and built to publish my own 2D and 3D titles, with an arcade-inspired interface.",
-        stack: ["HTML", "Vanilla JS", "Web Games"],
-        href: "https://handcrafted.industries/",
+          "A second poem writes in the margin of yours. It reads your stanza, moves somewhere adjacent in the same authored space, and answers from there — related, never a paraphrase. No model, no API, no network: the same stanza returns the same answer, forever, offline.",
+        stack: ["JavaScript", "ES Modules", "Generative Text"],
+        href: "https://flanderslorton.com/margin/",
       },
     ],
   },
@@ -201,7 +208,7 @@ export const categories: Category[] = [
   {
     id: "games",
     label: "Games",
-    tagline: "Interactive & playable work",
+    tagline: "Eleven games, all playable now",
     accent: "#7c83ff",
     body: "star",
     scale: 0.85,
@@ -210,9 +217,30 @@ export const categories: Category[] = [
       {
         title: "Handcrafted Industries",
         blurb:
-          "My catalogue of playable browser games, each written from scratch and hosted under one arcade-style front end.",
-        stack: ["Game Dev", "Interactive"],
+          "My arcade: eleven browser games, each written from scratch and playable in one click, under a front end I designed and built.",
+        stack: ["Game Dev", "Interactive", "Portal"],
         href: "https://handcrafted.industries/",
+      },
+      {
+        title: "Bar Party",
+        blurb:
+          "A deckbuilder roguelite where the deck is your regulars. Twenty nights of rising rent: develop patrons into gold-badge lifers, schedule the promo nights that suit the crowd you have built, and defuse trouble before it spreads through the room.",
+        stack: ["Godot 4", "GDScript", "Game Design"],
+        href: "https://handcrafted.industries/barparty/",
+      },
+      {
+        title: "Magic Duel",
+        blurb:
+          "A faux-3D occult desert crawl. Nothing is cast on the spot — you assemble a ritual across several rounds from ingredients drawn from real folk magic, while warding off what is already on its way.",
+        stack: ["Godot 4", "GDScript", "3D"],
+        href: "https://handcrafted.industries/magicduel/",
+      },
+      {
+        title: "Dodge Your Haters 3D",
+        blurb:
+          "An arena crawl with no attack button. You have only movement, and passing close to an enemy fills the salt meter — grazing is the entire combat system.",
+        stack: ["Godot 4", "GDScript", "3D"],
+        href: "https://handcrafted.industries/dyh3d/",
       },
     ],
   },
