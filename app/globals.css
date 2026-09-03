@@ -27,3 +27,12 @@ body {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* Scrolls when a category list outgrows a short viewport, without the bar. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
