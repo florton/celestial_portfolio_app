@@ -208,7 +208,7 @@ export const categories: Category[] = [
   {
     id: "games",
     label: "Games",
-    tagline: "Eleven games, all playable now",
+    tagline: "Fourteen games, all playable now",
     accent: "#7c83ff",
     body: "star",
     scale: 0.85,
@@ -217,16 +217,16 @@ export const categories: Category[] = [
       {
         title: "Handcrafted Industries",
         blurb:
-          "My arcade: eleven browser games, each written from scratch and playable in one click, under a front end I designed and built.",
+          "My arcade: fourteen browser games, each written from scratch and playable in one click, under a front end I designed and built.",
         stack: ["Game Dev", "Interactive", "Portal"],
         href: "https://handcrafted.industries/",
       },
       {
-        title: "Bar Party",
+        title: "Denver Taxi",
         blurb:
-          "A deckbuilder roguelite where the deck is your regulars. Twenty nights of rising rent: develop patrons into gold-badge lifers, schedule the promo nights that suit the crowd you have built, and defuse trouble before it spreads through the room.",
-        stack: ["Godot 4", "GDScript", "Game Design"],
-        href: "https://handcrafted.industries/barparty/",
+          "Four and a half kilometers of downtown Denver reconstructed 1:1 from survey data — Union Station, the 16th Street Mall, Coors Field, the Capitol. Pick up fares, follow the route line, and reach the drop-off before the tip runs down.",
+        stack: ["Unity 6", "C#", "URP"],
+        href: "https://handcrafted.industries/denvertaxi/",
       },
       {
         title: "Magic Duel",
