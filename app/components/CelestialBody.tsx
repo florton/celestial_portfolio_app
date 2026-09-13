@@ -135,9 +135,7 @@ export default function CelestialBody({
         </>
       )}
 
-      {kind === "constellation" && (
-        <Constellation uid={uid} accent={accent} light={light} />
-      )}
+      {kind === "sextant" && <Sextant uid={uid} accent={accent} light={light} />}
 
       {kind === "galaxy" && (
         <Galaxy uid={uid} accent={accent} light={light} hues={hues} />
@@ -241,7 +239,13 @@ function Galaxy({
   );
 }
 
-function Constellation({
+/**
+ * A sextant traced in stars, tilted as if held up to the sky. Its 60° frame
+ * hangs from a sparkling pivot over a graduated arc, with a cross brace, a
+ * telescope, and the index arm swung off-centre with its vernier. Geometry is
+ * laid out around the pivot at (50, 14) with a frame radius of 64.
+ */
+function Sextant({
   uid,
   accent,
   light,
@@ -250,28 +254,44 @@ function Constellation({
   accent: string;
   light: string;
 }) {
-  const dots: [number, number, number][] = [
-    [16, 38, 3.4],
-    [36, 62, 3],
-    [52, 40, 5],
-    [70, 64, 3],
-    [86, 42, 3.4],
+  const line = { fill: "none", stroke: light, strokeLinecap: "round" } as const;
+  const stars: [number, number, number][] = [
+    [50, 14, 3.4], // pivot
+    [18, 69.4, 2.4], // frame feet
+    [82, 69.4, 2.4],
+    [39, 33, 1.8], // horizon mirror
+    [29.8, 49, 1.8], // telescope bar, meeting both frame arms
+    [70.2, 49, 1.8],
+    [40.3, 83.3, 2.2], // index arm handle
   ];
   return (
-    <g>
-      <polyline
-        points={dots.map((d) => `${d[0]},${d[1]}`).join(" ")}
+    <g transform="rotate(-10 50 50)">
+      <polyline points="18,69.4 50,14 82,69.4" {...line} strokeWidth="1.2" opacity="0.55" />
+      <path d="M35 40 A30 30 0 0 0 65 40" {...line} strokeWidth="1" opacity="0.35" />
+      {/* Graduated arc: outer and inner rails with dashed ticks between. */}
+      <path d="M18 69.4 A64 64 0 0 0 82 69.4" {...line} strokeWidth="1.2" opacity="0.55" />
+      <path d="M21.5 63.4 A57 57 0 0 0 78.5 63.4" {...line} strokeWidth="1" opacity="0.35" />
+      <path
+        d="M19.75 66.4 A60.5 60.5 0 0 0 80.25 66.4"
         fill="none"
         stroke={light}
-        strokeWidth="1.2"
-        opacity="0.4"
+        strokeWidth="6"
+        strokeDasharray="0.8 4.5"
+        opacity="0.45"
       />
-      {dots.map(([x, y, r], i) => (
+      <line x1="29.8" y1="49" x2="70.2" y2="49" {...line} strokeWidth="3" opacity="0.3" />
+      <line x1="50" y1="49" x2="50" y2="78" {...line} strokeWidth="3" opacity="0.3" />
+      <line x1="50" y1="14" x2="40.3" y2="83.3" {...line} strokeWidth="1.4" opacity="0.6" />
+      <line x1="45.1" y1="77.96" x2="37.1" y2="76.8" {...line} strokeWidth="2" opacity="0.6" />
+      {stars.map(([x, y, r], i) => (
         <g key={i}>
-          <circle cx={x} cy={y} r={r * 2.4} fill={accent} opacity="0.25" />
+          <circle cx={x} cy={y} r={r * 2.4} fill={accent} opacity="0.22" />
           <circle cx={x} cy={y} r={r} fill={light} />
         </g>
       ))}
+      <g transform="translate(50 14) scale(0.3) translate(-50 -50)">
+        <Sparkle uid={uid} color={light} accent={accent} />
+      </g>
     </g>
   );
 }

@@ -1,0 +1,13 @@
+{
+  "subjects": {
+    "data-integrity": {
+      "check": "node tools/ratchet-check.js data-integrity"
+    },
+    "unit-tests": {
+      "check": "node tools/ratchet-check.js unit-tests"
+    },
+    "build": {
+      "check": "node tools/ratchet-check.js build"
+    }
+  }
+}

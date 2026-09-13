@@ -11,7 +11,7 @@ export type CelestialKind =
   | "comet"
   | "star"
   | "moon"
-  | "constellation"
+  | "sextant"
   | "galaxy";
 
 export type Category = {
@@ -32,28 +32,65 @@ export type Category = {
   projects: Project[];
 };
 
+// Shared between Featured Work and their home categories.
+const edwin: Project = {
+  title: "Edwin: K-12 Platform for Thousands of Students",
+  blurb:
+    "A K-12 learning platform serving thousands of students across Canada. I led the fullstack work and rewrote it from the ground up twice as the architecture aged out, as one of two frontend developers on an 8–10 person team shipping every two weeks. Also drove the performance work across the stack: caching, pagination, lazy loading, payload reduction, and MongoDB aggregation tuning.",
+  stack: ["React", "TypeScript", "Go", "GraphQL", "gRPC", "MongoDB"],
+  href: "https://www.edwin.app/resources-articles/edwin101",
+};
+
+const ratchet: Project = {
+  title: "Ratchet: Regression Memory for AI Coding",
+  blurb:
+    "A CLI that keeps AI-assisted codebases from sliding backwards. Failures become permanent counterexamples in a committed corpus, checks are written as plain-English heuristics, and git hooks enforce the whole gate the way a type check does. It gates its own repo. Zero runtime dependencies, 237 tests. Part of Flux, a design for moving LLM inference from runtime to build time.",
+  stack: ["TypeScript", "Node", "CLI", "Dev Tooling"],
+  href: "https://github.com/florton/flux",
+};
+
+const particles: Project = {
+  title: "2,000,000 Particle Simulator",
+  blurb:
+    "Up to two million particles simulated and drawn in real time in the browser. A WebGPU compute shader integrates the whole population on-GPU — including a mesh solver for a self-gravitating galaxy — with a WebGL2 transform-feedback fallback and a virtualized sidebar that scrolls every row on ~33 live DOM nodes.",
+  stack: ["WebGPU", "WGSL", "TypeScript", "WebGL2", "Vite"],
+  href: "https://flanderslorton.com/particles/",
+};
+
 /**
  * The wheel renders one node per category, evenly spaced around the rim.
  * Order matters twice over: it sets each body's position on the wheel AND the
  * order the sky cycles through. Arranged as a day → dusk → night → dawn loop,
- * with the sun (Web Apps) and moon (Music) placed 180° apart (indices 0 & 3).
+ * with the sun (Featured) at index 0 and the moon (Music) at index 4, the
+ * position nearest half a turn away, where the stars are brightest.
  */
 export const categories: Category[] = [
   {
-    id: "web",
-    label: "Web Apps & Custom Sites",
-    tagline: "Apps people actually use",
+    id: "featured",
+    label: "Featured Work",
+    tagline: "Production apps & serious engineering",
     accent: "#f0a72e",
     body: "sun",
     scale: 1.35,
     sky: ["#103a72", "#3f86c4", "#ffe0a0"],
+    projects: [edwin, ratchet, particles],
+  },
+  {
+    id: "engineering",
+    label: "Engineering Projects",
+    tagline: "Tools, libraries & simulations",
+    accent: "#b78be6",
+    body: "sextant",
+    scale: 1.1,
+    sky: ["#123866", "#4f82b8", "#f6d8aa"],
     projects: [
+      ratchet,
       {
-        title: "Edwin: K-12 Education Platform",
+        title: "Odds: Card-Game Probability Engine",
         blurb:
-          "A K-12 learning platform used by thousands of students across Canada. I led the fullstack work and rebuilt it from scratch twice as the architecture aged out. GraphQL and Go services underneath, plus a lot of time spent getting MongoDB aggregations to behave.",
-        stack: ["React", "TypeScript", "Go", "GraphQL", "gRPC", "MongoDB"],
-        href: "https://www.edwin.app/resources-articles/edwin101",
+          "Card-game probability from first principles. A blackjack solver that re-derives published basic strategy (268 of 270 cells), a shoe simulator that reports house edge with standard errors over 10M hands, and a Hold'em engine whose evaluator is checked against all 133,784,560 seven-card hands, with a player model fitted to real population stats. Plain Node, zero dependencies.",
+        stack: ["JavaScript", "Node", "Simulation", "Statistics"],
+        href: "https://github.com/florton/odds",
       },
       {
         title: "Next Bridge",
@@ -61,6 +98,25 @@ export const categories: Category[] = [
           "A library for typed signals across the Next.js server/client boundary. Server Actions return plain-data instructions and a slice store applies them with inference intact, so a wrong payload fails tsc instead of production. ~1.4 kB min+gzip, zero dependencies, built only on documented App Router surfaces.",
         stack: ["TypeScript", "React", "Next.js", "Library Design"],
         href: "https://github.com/florton/NextBridge",
+      },
+    ],
+  },
+  {
+    id: "art",
+    label: "Art",
+    tagline: "Rooms, instruments & poems",
+    accent: "#e06a9c",
+    hues: ["#c9a6f0", "#f0b98a"],
+    body: "galaxy",
+    scale: 1.15,
+    sky: ["#1a3a6e", "#6a7ec0", "#f2c2a6"],
+    projects: [
+      {
+        title: "Interactive Gallery",
+        blurb:
+          "Eight rooms of drawings, paintings, collages, and photos. You walk through it instead of scrolling it.",
+        stack: ["Drawing", "Painting", "Design"],
+        href: "https://art-gallery-orcin-six.vercel.app/",
       },
       {
         title: "Feelings Typewriter",
@@ -79,25 +135,6 @@ export const categories: Category[] = [
     ],
   },
   {
-    id: "art",
-    label: "Art",
-    tagline: "Rooms you walk through",
-    accent: "#e06a9c",
-    hues: ["#c9a6f0", "#f0b98a"],
-    body: "galaxy",
-    scale: 1.15,
-    sky: ["#1a3a6e", "#6a7ec0", "#f2c2a6"],
-    projects: [
-      {
-        title: "Interactive Gallery",
-        blurb:
-          "Eight rooms of drawings, paintings, collages, and photos. You walk through it instead of scrolling it.",
-        stack: ["Drawing", "Painting", "Design"],
-        href: "https://art-gallery-orcin-six.vercel.app/",
-      },
-    ],
-  },
-  {
     id: "webgl",
     label: "3D / WebGL",
     tagline: "Custom rendering from scratch",
@@ -106,13 +143,7 @@ export const categories: Category[] = [
     scale: 1.2,
     sky: ["#06202e", "#1d7d8e", "#6fd0c0"],
     projects: [
-      {
-        title: "1,000,000 Particle Simulator",
-        blurb:
-          "A million particles simulated and drawn at 60 fps in the browser. A WebGPU compute shader integrates the whole population on-GPU — including a mesh solver for a self-gravitating galaxy — with a WebGL2 transform-feedback fallback and a virtualized sidebar that scrolls all million rows on ~33 live DOM nodes.",
-        stack: ["WebGPU", "WGSL", "TypeScript", "WebGL2", "Vite"],
-        href: "https://flanderslorton.com/particles/",
-      },
+      particles,
       {
         title: "Custom WebGL Framework",
         blurb:
@@ -129,26 +160,36 @@ export const categories: Category[] = [
     ],
   },
   {
+    id: "music",
+    label: "Music",
+    tagline: "Original tracks & releases",
+    accent: "#cdd9e8",
+    body: "moon",
+    scale: 1.05,
+    sky: ["#05060f", "#171734", "#463a70"],
+    projects: [
+      {
+        title: "Bandcamp",
+        blurb: "Original tracks I wrote, recorded, and produced myself.",
+        stack: ["Bandcamp", "Original"],
+        href: "https://flanderslorton.bandcamp.com/",
+      },
+    ],
+  },
+  {
     id: "about",
-    label: "About",
-    tagline: "8+ years, fullstack",
+    label: "About & Contact",
+    tagline: "8+ years fullstack · let's build something",
     accent: "#3fc77f",
     body: "comet",
     scale: 0.95,
-    sky: ["#0c2a22", "#2f7a55", "#e0b258"],
+    sky: ["#100a32", "#3e2360", "#9a5a86"],
     projects: [
       {
         title: "Principal Fullstack Developer, Nelson Education",
         blurb:
-          "2018 to 2026. Built and twice rebuilt Edwin on a team of 8 to 10, shipping every two weeks. Wrote the GraphQL, gRPC, and Go services behind it, and owned most of the performance work, from caching and pagination to MongoDB query tuning.",
+          "2018 to 2026. Built and twice rebuilt Edwin on a team of 8 to 10, shipping every two weeks. Wrote the GraphQL, gRPC, and Go services behind it, and owned most of the performance work, from caching and pagination to MongoDB query tuning. Before that: frontend intern at Taboola, and a B.S. in Computer Science from Loyola Marymount, cum laude and with honors.",
         stack: ["React", "TypeScript", "Node", "Go", "AWS"],
-        href: "https://www.linkedin.com/in/flanders-lorton/",
-      },
-      {
-        title: "Earlier: Taboola & LMU",
-        blurb:
-          "Interned on frontend at Taboola, shipping content-control features and the API endpoints behind them. Before that, a B.S. in Computer Science from Loyola Marymount, cum laude and with honors.",
-        stack: ["React", "Redux", "Java Spring"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
       },
       {
@@ -157,17 +198,6 @@ export const categories: Category[] = [
         stack: ["PDF"],
         href: "/flanders-lorton-resume.pdf",
       },
-    ],
-  },
-  {
-    id: "contact",
-    label: "Contact",
-    tagline: "Let's build something",
-    accent: "#b78be6",
-    body: "constellation",
-    scale: 0.9,
-    sky: ["#100a32", "#3e2360", "#9a5a86"],
-    projects: [
       {
         title: "Email",
         blurb: "Quickest way to get me. I answer within a day.",
@@ -185,23 +215,6 @@ export const categories: Category[] = [
         blurb: "The full work history, if you want the formal version.",
         stack: ["in/flanders-lorton"],
         href: "https://www.linkedin.com/in/flanders-lorton/",
-      }
-    ],
-  },
-  {
-    id: "music",
-    label: "Music",
-    tagline: "Original tracks & releases",
-    accent: "#cdd9e8",
-    body: "moon",
-    scale: 1.05,
-    sky: ["#05060f", "#171734", "#463a70"],
-    projects: [
-      {
-        title: "Bandcamp",
-        blurb: "Original tracks I wrote, recorded, and produced myself.",
-        stack: ["Bandcamp", "Original"],
-        href: "https://flanderslorton.bandcamp.com/",
       },
     ],
   },
