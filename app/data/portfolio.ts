@@ -76,32 +76,6 @@ export const categories: Category[] = [
     projects: [edwin, ratchet, particles],
   },
   {
-    id: "engineering",
-    label: "Engineering Projects",
-    tagline: "Tools, libraries & simulations",
-    accent: "#b78be6",
-    body: "sextant",
-    scale: 1.1,
-    sky: ["#123866", "#4f82b8", "#f6d8aa"],
-    projects: [
-      ratchet,
-      {
-        title: "Odds: Card-Game Probability Engine",
-        blurb:
-          "Card-game probability from first principles. A blackjack solver that re-derives published basic strategy (268 of 270 cells), a shoe simulator that reports house edge with standard errors over 10M hands, and a Hold'em engine whose evaluator is checked against all 133,784,560 seven-card hands, with a player model fitted to real population stats. Plain Node, zero dependencies.",
-        stack: ["JavaScript", "Node", "Simulation", "Statistics"],
-        href: "https://github.com/florton/odds",
-      },
-      {
-        title: "Next Bridge",
-        blurb:
-          "A library for typed signals across the Next.js server/client boundary. Server Actions return plain-data instructions and a slice store applies them with inference intact, so a wrong payload fails tsc instead of production. ~1.4 kB min+gzip, zero dependencies, built only on documented App Router surfaces.",
-        stack: ["TypeScript", "React", "Next.js", "Library Design"],
-        href: "https://github.com/florton/NextBridge",
-      },
-    ],
-  },
-  {
     id: "art",
     label: "Art",
     tagline: "Rooms, instruments & poems",
@@ -131,6 +105,32 @@ export const categories: Category[] = [
           "A second poem writes in the margin of yours. It reads your stanza, moves somewhere adjacent in the same authored space, and answers from there — related, never a paraphrase. No model, no API, no network: the same stanza returns the same answer, forever, offline.",
         stack: ["JavaScript", "ES Modules", "Generative Text"],
         href: "https://flanderslorton.com/margin/",
+      },
+    ],
+  },
+  {
+    id: "engineering",
+    label: "Engineering Projects",
+    tagline: "Tools, libraries & simulations",
+    accent: "#b78be6",
+    body: "sextant",
+    scale: 1.1,
+    sky: ["#123866", "#4f82b8", "#f6d8aa"],
+    projects: [
+      ratchet,
+      {
+        title: "Odds: Card-Game Probability Engine",
+        blurb:
+          "Card-game probability from first principles. A blackjack solver that re-derives published basic strategy (268 of 270 cells), a shoe simulator that reports house edge with standard errors over 10M hands, and a Hold'em engine whose evaluator is checked against all 133,784,560 seven-card hands, with a player model fitted to real population stats. Plain Node, zero dependencies.",
+        stack: ["JavaScript", "Node", "Simulation", "Statistics"],
+        href: "https://github.com/florton/odds",
+      },
+      {
+        title: "Next Bridge",
+        blurb:
+          "A library for typed signals across the Next.js server/client boundary. Server Actions return plain-data instructions and a slice store applies them with inference intact, so a wrong payload fails tsc instead of production. ~1.4 kB min+gzip, zero dependencies, built only on documented App Router surfaces.",
+        stack: ["TypeScript", "React", "Next.js", "Library Design"],
+        href: "https://github.com/florton/NextBridge",
       },
     ],
   },
